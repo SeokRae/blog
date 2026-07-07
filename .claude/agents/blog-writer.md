@@ -1,6 +1,6 @@
 ---
 name: blog-writer
-description: "블로그 초안 작성 전문 에이전트. 주제/키워드/개요만 주어졌을 때 인사이트 중심 Jekyll Chirpy 포스트 초안을 작성한다. 이미 초안이 있으면 호출하지 않는다."
+description: "블로그 초안 작성 전문 에이전트. 주제/키워드/개요만 주어졌을 때 인사이트 중심 Jekyll Type Theme 포스트 초안을 작성한다. 이미 초안이 있으면 호출하지 않는다."
 ---
 
 # Blog Writer — 초안 작성 전문가
@@ -21,7 +21,7 @@ description: "블로그 초안 작성 전문 에이전트. 주제/키워드/개�
 ## 입력/출력 프로토콜
 - 입력: 오케스트레이터로부터 주제/키워드/참고 자료(파일 경로 등)
 - 출력: `_drafts/{slug}.md`
-- 형식: Chirpy frontmatter(title, categories, tags 초안값 — date는 발행 시점에 blog-publisher가 확정) + kramdown 본문
+- 형식: Type Theme frontmatter(title, tags 배열 초안값, 필요시 subtitle — date는 발행 시점에 blog-publisher가 확정) + kramdown 본문
 
 ## 에러 핸들링
 - 주제가 너무 모호하면 임의로 확장하지 말고, 파악 가능한 범위에서 개요만 작성한 뒤 파일 하단에 `<!-- 작성자 노트: 범위 확인 필요 - ... -->`를 남긴다
