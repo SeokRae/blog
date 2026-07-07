@@ -5,7 +5,7 @@ description: "블로그(~/IdeaProjects/blog, SeokRae/blog) 포스트 작성부�
 
 # Blog Pipeline Orchestrator
 
-`~/IdeaProjects/blog` (Jekyll + Chirpy, https://seokrae.github.io/blog/) 포스트를 아이디어부터 발행까지 조율하는 오케스트레이터.
+`~/IdeaProjects/blog` (Jekyll + Type Theme, https://seokrae.github.io/blog/) 포스트를 아이디어부터 발행까지 조율하는 오케스트레이터.
 
 ## 실행 모드: 서브 에이전트
 
@@ -45,11 +45,11 @@ description: "블로그(~/IdeaProjects/blog, SeokRae/blog) 포스트 작성부�
 
 사용자가 승인하면:
 `Agent(prompt: "_drafts/{slug}.md 발행", subagent_type: "blog-publisher", model: "opus")`
-→ 결과: `_posts/`로 이동, git push, Actions 확인, 배포 URL 보고
+→ 결과: `_posts/`로 이동, git push, Pages 빌드 확인, 배포 URL 보고
 
 ### Phase 4: 결과 보고
 
-- 최종 배포 URL, Actions 실행 결과, 걸린 시간을 요약 보고한다
+- 최종 배포 URL, Pages 빌드 확인 결과, 걸린 시간을 요약 보고한다
 - 문제가 발생했으면 어느 단계에서 멈췄는지와 남은 산출물 경로를 명시한다
 
 ## 에러 핸들링
@@ -58,7 +58,7 @@ description: "블로그(~/IdeaProjects/blog, SeokRae/blog) 포스트 작성부�
 |------|------|
 | writer/editor 실패 | 1회 재시도. 재실패 시 부분 산출물(있다면)과 함께 사용자에게 보고, 수동 개입 요청 |
 | publisher 로컬 빌드 실패 | 절대 자동으로 push하지 않는다 — 에러 로그 보고 후 사용자 확인 대기 |
-| publisher Actions 실패 | push는 이미 완료된 상태이므로 에러 로그를 보고하고 재발행 여부를 사용자에게 확인 |
+| publisher Pages 빌드 실패 | push는 이미 완료된 상태이므로 에러 로그를 보고하고 재발행 여부를 사용자에게 확인 |
 
 ## 테스트 시나리오
 
@@ -67,7 +67,7 @@ description: "블로그(~/IdeaProjects/blog, SeokRae/blog) 포스트 작성부�
 2. Phase 0: `_drafts/`에 기존 초안 없음 → 전체 실행
 3. Phase 1: blog-writer가 `_drafts/jekyll-chirpy-setup.md` 생성
 4. Phase 2: blog-editor가 윤문, 사용자에게 확인 요청
-5. 사용자 승인 → Phase 3: blog-publisher가 `_posts/2026-07-07-jekyll-chirpy-setup.md`로 이동, push, Actions 확인
+5. 사용자 승인 → Phase 3: blog-publisher가 `_posts/2026-07-07-jekyll-chirpy-setup.md`로 이동, push, Pages 빌드 확인
 6. Phase 4: 배포 URL과 함께 완료 보고
 
 ### 에러 흐름
