@@ -5,7 +5,7 @@ baseurl: "/blog"
 lang: ko
 timezone: Asia/Seoul
 
-remote_theme: rohanchandra/type-theme
+remote_theme: rohanchandra/type-theme@c6ec5a69ff7dfe2df193be08515193c72bd4a55d
 
 # THEME-SPECIFIC CONFIGURATION (Type Theme)
 theme_settings:
@@ -50,7 +50,7 @@ theme_settings:
 
 # PAGINATION
 paginate: 5
-paginate_path: "blog/page:num"
+paginate_path: "/page:num/"
 
 # BUILD SETTINGS
 markdown: kramdown

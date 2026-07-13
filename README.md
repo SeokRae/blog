@@ -1,39 +1,55 @@
-# Chirpy Starter
+# SeokRae 기술 블로그
 
-[![Gem Version](https://img.shields.io/gem/v/jekyll-theme-chirpy)][gem]&nbsp;
-[![GitHub license](https://img.shields.io/github/license/cotes2020/chirpy-starter.svg?color=blue)][mit]
+개발 과정에서 얻은 판단, 트레이드오프, 인사이트를 기록하는 Jekyll 블로그입니다.
+GitHub Pages 프로젝트 사이트인 <https://seokrae.github.io/blog/>로 배포됩니다.
 
-A minimal, ready-to-use template for creating a blog with the [**Chirpy**][chirpy] Jekyll theme. Get up and running in minutes with all critical files pre-configured.
+## 기술 구성
 
-## Why This Starter Exists
+- Jekyll 및 GitHub Pages
+- [Type Theme](https://github.com/rohanchandra/type-theme)
+- `jekyll-remote-theme`, `jekyll-paginate`, `jekyll-feed`, `jekyll-sitemap`
 
-When installing Chirpy through [RubyGems.org][gem], Jekyll can only read a subset of theme files (`_data`, `_layouts`, `_includes`, `_sass`, `assets`) and limited `_config.yml` options from the gem. As a result, users cannot enjoy the full out-of-the-box experience that Chirpy offers.
+원격 테마는 재현 가능한 빌드를 위해 `_config.yml`에서 검증된 커밋으로 고정합니다.
+접근성과 메타데이터 개선은 `_layouts`, `_includes`, `assets/css/main.scss`의 최소 오버라이드로 관리합니다.
 
-To unlock all features, the following files must be present in your Jekyll site:
+## 로컬 실행
+
+Ruby와 Bundler를 설치한 뒤 다음 명령을 실행합니다.
 
 ```shell
-.
-├── _config.yml
-├── _plugins
-├── _tabs
-└── index.html
+bundle install
+bundle exec jekyll serve
 ```
 
-This starter bundles those files from the latest **Chirpy** release along with a [CD][CD] workflow, so you can start writing immediately.
+로컬 주소는 <http://localhost:4000/blog/>입니다.
 
-## Usage
+## 검증
 
-Check out the [theme's docs](https://github.com/cotes2020/jekyll-theme-chirpy/wiki).
+```shell
+bundle exec ruby test/site_output_test.rb
+```
 
-## Contributing
+검증 스크립트는 임시 게시글 6개로 사이트를 빌드하여 다음 계약을 확인합니다.
 
-This repository is automatically updated with new releases from the theme repository. If you encounter any issues or want to contribute to its improvement, please visit the [theme repository][chirpy] to provide feedback.
+- `/blog/page2/` 페이지네이션 경로
+- 한국어 문서 언어와 절대 canonical URL
+- 유효한 설명 메타 태그
+- 접근 가능한 검색 컨트롤
+- 검색 URL의 이중 슬래시 방지
+- 빈 feature image의 불필요한 홈페이지 요청 방지
 
-## License
+## 글 작성
 
-This work is published under [MIT][mit] License.
+게시글은 `_posts/YYYY-MM-DD-title.md` 형식으로 추가합니다.
 
-[gem]: https://rubygems.org/gems/jekyll-theme-chirpy
-[chirpy]: https://github.com/cotes2020/jekyll-theme-chirpy/
-[CD]: https://en.wikipedia.org/wiki/Continuous_deployment
-[mit]: https://github.com/cotes2020/chirpy-starter/blob/master/LICENSE
+```markdown
+---
+layout: post
+title: "글 제목"
+tags: [tag]
+---
+
+본문
+```
+
+`main` 브랜치에 반영하면 GitHub Pages가 사이트를 배포합니다. GitHub Actions는 동일한 빌드 계약을 먼저 검증합니다.
