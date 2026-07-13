@@ -59,12 +59,14 @@ description: "블로그(~/IdeaProjects/blog, SeokRae/blog) 포스트 작성부�
 
 사용자가 승인하면:
 `Agent(prompt: "_drafts/{slug}.md 발행", subagent_type: "blog-publisher", model: "opus")`
-→ 결과: 내부 주석 정리(작성자·편집자·검증 노트 제거) → `_posts/`로 이동, git push, Pages 빌드 확인, 배포 URL 보고
+→ 결과: 내부 주석 정리(작성자·편집자·검증 노트 제거) → `_posts/`로 이동 → **Issue 생성 → main에서 feature 브랜치 분기 → 커밋 → PR(`Closes #N`) 생성**. main 직접 push·자동 merge는 하지 않는다 — **merge는 사용자가 한다.**
+→ merge가 완료되면 Pages 빌드·배포 URL을 확인해 보고한다(merge 전이면 PR URL 보고 후 대기).
 → 본문에 `(확인 필요)` 미해소 마커가 남아 있으면 publisher가 발행을 멈추고 보고한다.
 
 ### Phase 4: 결과 보고
 
-- 최종 배포 URL, Pages 빌드 확인 결과, 걸린 시간을 요약 보고한다
+- PR URL·Issue 번호를 보고하고, 사용자에게 merge를 안내한다 (자동 merge하지 않음)
+- merge 후에는 최종 배포 URL·Pages 빌드 확인 결과·걸린 시간을 요약 보고한다
 - 문제가 발생했으면 어느 단계에서 멈췄는지와 남은 산출물 경로를 명시한다
 
 ## 에러 핸들링
@@ -74,8 +76,8 @@ description: "블로그(~/IdeaProjects/blog, SeokRae/blog) 포스트 작성부�
 | researcher 내부 근거 없음 | 실패가 아니다 — 외부 근거만으로 진행할지 사용자에게 확인 후 계속 |
 | verifier "확인 불가" 잔존 | 발행 전 사용자에게 목록으로 보고. 그대로 낼지·수정할지 확인받기 전엔 진행하지 않음 |
 | researcher/writer/verifier/editor 실패 | 1회 재시도. 재실패 시 부분 산출물(있다면)과 함께 사용자에게 보고, 수동 개입 요청 |
-| publisher 로컬 빌드 실패 | 절대 자동으로 push하지 않는다 — 에러 로그 보고 후 사용자 확인 대기 |
-| publisher Pages 빌드 실패 | push는 이미 완료된 상태이므로 에러 로그를 보고하고 재발행 여부를 사용자에게 확인 |
+| publisher 로컬 빌드 실패 | 절대 자동으로 push/PR하지 않는다 — 에러 로그 보고 후 사용자 확인 대기 |
+| publisher Pages 빌드 실패 | merge가 이미 된 상태이므로 에러 로그를 보고하고 재발행(새 PR) 여부를 사용자에게 확인 |
 
 ## 테스트 시나리오
 
@@ -86,8 +88,8 @@ description: "블로그(~/IdeaProjects/blog, SeokRae/blog) 포스트 작성부�
 4. Phase 1: blog-writer가 리서치 노트를 근거로 `_drafts/jekyll-chirpy-setup.md` 생성
 5. Phase 1.5: blog-verifier가 `(확인 필요)` 플래그 검증, "확인 불가" 없으면 통과
 6. Phase 2: blog-editor가 윤문, 사용자에게 확인 요청
-7. 사용자 승인 → Phase 3: blog-publisher가 `_posts/2026-07-07-jekyll-chirpy-setup.md`로 이동, push, Pages 빌드 확인
-8. Phase 4: 배포 URL과 함께 완료 보고
+7. 사용자 승인 → Phase 3: blog-publisher가 `_posts/2026-07-07-jekyll-chirpy-setup.md`로 이동, Issue→feature 브랜치→PR 생성 (merge는 사용자)
+8. 사용자 merge → Phase 4: Pages 빌드 확인, 배포 URL과 함께 완료 보고
 
 ### 에러 흐름
 1. Phase 3에서 로컬 `jekyll build` 실패 (frontmatter 오류)
