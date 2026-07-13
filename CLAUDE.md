@@ -38,6 +38,6 @@ GitHub Pages가 main push 시 네이티브 빌드한다. `.github/workflows/site
 |------|----------|------|------|
 | 2026-07-07 | 초기 구성 (writer/editor/publisher 파이프라인) | 전체 | - |
 | 2026-07-07 | 인사이트 중심 컨셉 반영 (튜토리얼 나열 지양, "왜/교훈" 강조) | `_config.yml`, `agents/blog-writer.md`, `agents/blog-editor.md` | 사용자가 블로그 컨셉을 "인사이트를 위한 글"로 명확화 |
-| 2026-07-07 | Chirpy → Type Theme 테마 교체 (사이드바 없는 단일 컬럼, 인사이트 글쓰기 컨셉에 맞춤. Chirpy 저장소는 archived 상태라 유지보수 대신 교체 선택) | `_config.yml`, `Gemfile`, `index.html`/`about.md`/`404.md`/`search.html`/`tags.html`, `.claude/agents/*`, `.claude/skills/blog-pipeline/SKILL.md` | 사용자가 인사이트 중심 컨셉에 맞는 테마로 전환 요청 |
+| 2026-07-07 | Chirpy → Type Theme 테마 교체 (사이드바 없는 단일 컬럼, 인사이트 글쓰기 컨셉에 맞춤. ⚠️ 당시 사유로 적은 "Chirpy가 archived"는 오기 — 2026-07-13 GitHub API 확인 시 Chirpy는 활성(v7.6.0)·오히려 Type Theme가 archived(2025-07-26)였음. 실제 교체 근거는 디자인/컨셉 적합성) | `_config.yml`, `Gemfile`, `index.html`/`about.md`/`404.md`/`search.html`/`tags.html`, `.claude/agents/*`, `.claude/skills/blog-pipeline/SKILL.md` | 사용자가 인사이트 중심 컨셉에 맞는 테마로 전환 요청 |
 | 2026-07-13 | 명령어·remote theme 오버라이드 아키텍처·main 직접 push 예외 섹션 추가 (`/init`) | `CLAUDE.md` | 신규 Claude 인스턴스 온보딩에 필요한 빌드/검증 명령과 비자명한 구조를 문서화 |
 | 2026-07-13 | 파이프라인에 근거 수집(Phase 0.5)·사실 검증(Phase 1.5) 단계 추가 | `agents/blog-researcher.md`, `agents/blog-verifier.md`, `agents/blog-writer.md`, `skills/blog-pipeline/SKILL.md` | writer의 `(확인 필요)` 플래그를 해소할 단계가 없던 구멍을 메움. 내부 근거 1차·외부 검증 2차로 인사이트 컨셉 유지 |
