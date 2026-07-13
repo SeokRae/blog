@@ -3,6 +3,14 @@
 
 @import "type-theme";
 
+// 넓은 화면에서 본문 읽기 폭 제한 — 헤더/푸터는 .content 밖이라 전체 폭 유지,
+// 좁은 화면(<1080px)은 테마의 퍼센트 패딩 반응형이 그대로 동작한다.
+.content {
+  max-width: 1080px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
 .visually-hidden {
   position: absolute;
   width: 1px;
