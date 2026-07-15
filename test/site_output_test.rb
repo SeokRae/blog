@@ -9,14 +9,17 @@ class SiteOutputTest < Minitest::Test
 
   def test_generated_site_contract
     Dir.mktmpdir("blog-site-test") do |source|
+      source = File.realpath(source)
       copy_site_source(source)
       add_pagination_fixture(source)
 
       destination = File.join(source, "_site")
       stdout, stderr, status = Open3.capture3(
+        { "PAGES_REPO_NWO" => "SeokRae/blog" },
         "bundle", "exec", "jekyll", "build",
         "--source", source,
-        "--destination", destination
+        "--destination", destination,
+        chdir: source
       )
       assert status.success?, "Jekyll build failed:\n#{stdout}\n#{stderr}"
 
