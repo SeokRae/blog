@@ -22,7 +22,7 @@ node test/search_test.js                    # 검색 매칭 계약 검증 (CI와
 - **로컬 오버라이드 (이 저장소에 있음)**: `_layouts/{default,page,post}.html`, `_includes/{head,header}.html`, `assets/css/main.scss`(`type-theme` import 후 a11y 규칙만 추가), `assets/js/search.js`, 페이지 파일(`index.html`·`about.md`·`search.html`·`tags.html`·`404.md`).
 - **테마 상속 (저장소에 없음 — 여기서 찾지 말 것)**: `_layouts/{home,tags}.html`, `_includes/{footer,icons,tags_list,post_nav,disqus}.html`, `_sass/type-theme.scss`.
 
-오버라이드는 특정 계약을 고치려고 존재한다 — 한국어 `lang`, 절대 canonical URL, escape된 description meta, 접근 가능한 검색(`aria-label`), 검색 URL 이중 슬래시 방지, `/blog/page2/` 페이지네이션 경로, 외부 스크립트 없는 검색. 이 계약들은 **`test/site_output_test.rb`에 잠겨 있다.** 오버라이드를 수정하면 계약 assertion이 깨질 수 있으니 반드시 테스트를 돌린다.
+오버라이드는 특정 계약을 고치려고 존재한다 — 한국어 `lang`, 절대 canonical URL, escape된 description meta, 접근 가능한 검색(`aria-label`), 검색 URL 이중 슬래시 방지, `/blog/page2/` 페이지네이션 경로, 외부 스크립트 없는 검색, **WCAG AA 색 대비**. 이 계약들은 **`test/site_output_test.rb`에 잠겨 있다.** 오버라이드를 수정하면 계약 assertion이 깨질 수 있으니 반드시 테스트를 돌린다.
 
 `assets/js/search.js`는 lunr을 쓰지 않는다 — lunr 파이프라인의 trimmer가 `\W`로 토큰을 잘라 **한글 토큰을 빈 문자열로 만들기 때문에** 한국어 질의가 전부 0건이 된다 (#12). 대신 substring 매칭을 쓰고, 이 동작은 `test/search_test.js`에 잠겨 있다. HTML 계약 테스트는 JS 동작을 검증하지 못하므로 검색 로직을 고치면 **두 테스트를 모두** 돌린다.
 
@@ -47,3 +47,4 @@ GitHub Pages가 main push(= PR merge) 시 네이티브 빌드한다. `.github/wo
 | 2026-07-13 | 발행 정책을 Issue-Driven + GitFlow로 통일 — "main 직접 push" 예외 폐기(포스트도 Issue→feature→PR→merge). blog-publisher·SKILL Phase 3를 PR 기반 발행으로 갱신 | `CLAUDE.md`, `agents/blog-publisher.md`, `skills/blog-pipeline/SKILL.md` | 사용자가 "모든 작업은 Issue-Driven GitFlow(feature 단위)"로 정책 확정 (#2) |
 | 2026-07-17 | `assets/js/search.js`를 로컬 오버라이드로 승격(lunr 제거 → substring 매칭), 검색 JS 계약 테스트·CI step 추가 | `assets/js/search.js`, `search.html`, `test/{site_output_test.rb,search_test.js}`, `.github/workflows/site-check.yml`, `CLAUDE.md` | lunr trimmer가 한글 토큰을 비워 한국어 검색이 라이브에서 항상 0건이었음. JS 미검증 사각지대가 이를 은폐 (#12) |
 | 2026-07-17 | 근거 사슬 확보 — 리서치 노트를 git 추적으로 되돌리고(`_drafts/*` + `!*.research.md`), verifier가 **확정 포함 전 검증 결과**를 노트의 `## 검증 기록`에 남기도록 강제. writer는 노트에 근거 없는 외부 인용 금지, publisher는 노트를 포스트와 함께 커밋하고 근거 사슬 미비 시 발행 중단 | `.gitignore`, `agents/blog-{writer,verifier,publisher}.md`, `skills/blog-pipeline/SKILL.md` | 발행본이 DOI까지 달아 인용한 논문을 리서치 노트는 "확정하지 못함"으로 남겨둠. 확정 시 근거를 안 남기는 설계 + 초안 주석을 발행 시 삭제하는 설계가 겹쳐 검증이 흔적 없이 증발 (#16) |
+| 2026-07-17 | 색 대비 AA 확보 — `main.scss`에서 `@import` **전에** `$link-color`(#1ABC9C 2.41:1 → #117964 5.33:1)·`$search-color`·`$tags-color` 재정의(`!default`라 import 전이 정석), import 후 rouge 주석·의사이름색 오버라이드 | `assets/css/main.scss`, `test/site_output_test.rb` | 링크색이 본문 전체에서 AA에 크게 미달. Fable 검토는 "링크 teal은 통과"라 했으나 teal은 rouge `.na`/`.no`/`.nv` 색이었고 링크가 아니었음 (#26) |
