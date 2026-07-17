@@ -100,6 +100,16 @@ article,
   outline-offset: 2px;
 }
 
+// 검색 폼이 <form> 기본 block이라 nav 아이콘 아래 줄로 떨어졌다 → 인라인으로 같은 줄에 정렬 (#38 항목6)
+.site-nav form {
+  display: inline-flex;
+  align-items: center;
+  vertical-align: middle;
+}
+.site-nav form input[type=text] {
+  width: 8em;
+}
+
 // ── 다크 모드 (#38 항목4) ──
 // Type Theme는 라이트 전용이라 색이 컴파일 CSS에 박혀 있다. import·라이트 오버라이드 뒤에
 // [data-theme="dark"] 스코프로 덮는다(라이트 규칙은 그대로 남아 계약 테스트도 유지). 테마는
