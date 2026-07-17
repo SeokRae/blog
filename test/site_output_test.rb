@@ -33,7 +33,7 @@ class SiteOutputTest < Minitest::Test
       assert_match(/<meta name="description"\s+content="[^"]*&quot;왜 그런 선택을 했는지&quot;/m, index)
       refute_includes about, "background-image: url('/blog/')"
       assert_includes search, 'aria-label="검색"'
-      assert_includes search, 'integrity="sha384-'
+      refute_match(%r{<script[^>]*\ssrc="https?://}, search, "검색은 외부 스크립트 없이 동작해야 한다")
       refute_match(%r{"url": "/blog//}, search)
       assert File.exist?(File.join(destination, "page2", "index.html")), "Expected /blog/page2/ output"
       refute File.exist?(File.join(destination, "blog", "page2", "index.html")), "Unexpected duplicated /blog/blog/page2/ output"
