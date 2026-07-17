@@ -11,6 +11,10 @@ _site
 # RubyGems
 *.gem
 
+# Blog pipeline 작업 파일 (발행은 _posts/로만 이뤄짐)
+_drafts/
+.claude/session-plan.md
+
 # NPM dependencies
 node_modules
 package-lock.json
