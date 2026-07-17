@@ -67,6 +67,7 @@ plugins:
 exclude:
   - Gemfile
   - Gemfile.lock
+  - vendor
   - README.md
   - LICENSE
   - CLAUDE.md
