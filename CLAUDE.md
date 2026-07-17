@@ -30,6 +30,16 @@ node test/search_test.js                    # 검색 매칭 계약 검증 (CI와
 
 `assets/js/search.js`는 lunr을 쓰지 않는다 — lunr 파이프라인의 trimmer가 `\W`로 토큰을 잘라 **한글 토큰을 빈 문자열로 만들기 때문에** 한국어 질의가 전부 0건이 된다 (#12). 대신 substring 매칭을 쓰고, 이 동작은 `test/search_test.js`에 잠겨 있다. HTML 계약 테스트는 JS 동작을 검증하지 못하므로 검색 로직을 고치면 **두 테스트를 모두** 돌린다.
 
+## 포스트 규칙
+
+frontmatter 필드 순서는 `layout → date → title → subtitle → tags`로 통일한다 (#30).
+
+태그는 **고유명사는 원 표기, 주제는 한국어**다 — `Jekyll`·`GitHub Pages`·`AI`·`flowcast`(소문자가 프로젝트 정식 표기) / `문서화`·`아키텍처`·`회고`. `tags.html` 아카이브가 태그명을 그대로 키로 쓰므로 표기가 흔들리면 같은 주제가 갈라진다.
+
+**본문에서 저장소 코드를 인용할 때는 원문 그대로 옮긴다.** 축약·괄호 생략·정규식 손질 금지. 이 블로그의 결론 중 하나가 "'왜'를 기록할 때 그 안에 섞인 '검증 가능한 사실'은 그 자리에서 검증하라"인데, 인용을 다듬으면 그 자리에서 어긴다 (#30).
+
+발행된 포스트는 **그 시점의 기록**이다. 나중에 코드가 바뀌어 인용과 어긋나도 소급해 고치지 않는다 — 예: Chirpy 편이 인용한 `assert_includes search, 'integrity="sha384-'`는 발행 당시 실재했고 #12에서 제거됐지만 본문은 그대로 둔다. 지금 것으로 바꾸면 "그때 이렇게 했다"는 기록이 거짓이 된다.
+
 ## 배포: Issue-Driven + GitFlow (포스트 포함, 예외 없음)
 
 GitHub Pages가 main push(= PR merge) 시 네이티브 빌드한다. `.github/workflows/site-check.yml`가 push/PR마다 계약 테스트를 먼저 돌린다. **모든 작업은 예외 없이 Issue → main에서 feature 브랜치 분기 → PR(`Closes #N`) → merge로 진행한다 — 블로그 포스트도 마찬가지다.** merge가 main에 반영되는 순간 Pages 빌드가 트리거되므로 배포는 그대로 동작한다. blog-publisher도 main에 직접 push하지 않고 feature 브랜치 + PR로 발행하며, merge는 사용자가 한다. (2026-07-13 이전엔 "포스트는 main 직접 push" 예외를 뒀으나 사용자 지시로 폐기 — 글로벌 Issue-Driven 규칙을 그대로 따른다.)
@@ -54,3 +64,4 @@ GitHub Pages가 main push(= PR merge) 시 네이티브 빌드한다. `.github/wo
 | 2026-07-17 | 링크 공유용 OG/Twitter 메타 추가(jekyll-seo-tag 대신 수동 — 플러그인이 title·canonical·description을 중복 emit하고 계약 테스트가 잠근 canonical 형식과 어긋남), `<title>` 이스케이프, search·tags `sitemap: false` | `_includes/head.html`, `search.html`, `tags.html`, `test/site_output_test.rb` | 렌더된 head에 og:*·twitter:*가 전무해 링크 공유 미리보기가 fallback에만 의존 (#22) |
 | 2026-07-17 | FontAwesome 제거 — `_includes/icons.html`을 로컬 오버라이드로 승격하고 아이콘 3개(검색·RSS·GitHub)를 인라인 SVG로. aria-label 부여, `.icon` 크기 규칙 추가 | `_includes/{head,header,icons}.html`, `assets/css/main.scss`, `test/site_output_test.rb` | 아이콘 3개 때문에 all.css 55KB를 렌더 블로킹으로 받고 있었음. 제거로 사이트의 외부 리소스 요청이 0이 됨 (#24) |
 | 2026-07-17 | 색 대비 AA 확보 — `main.scss`에서 `@import` **전에** `$link-color`(#1ABC9C 2.41:1 → #117964 5.33:1)·`$search-color`·`$tags-color` 재정의(`!default`라 import 전이 정석), import 후 rouge 주석·의사이름색 오버라이드 | `assets/css/main.scss`, `test/site_output_test.rb` | 링크색이 본문 전체에서 AA에 크게 미달. Fable 검토는 "링크 teal은 통과"라 했으나 teal은 rouge `.na`/`.no`/`.nv` 색이었고 링크가 아니었음 (#26) |
+| 2026-07-17 | 포스트 규칙 명문화 — frontmatter 필드 순서(`layout → date → title → subtitle → tags`), 태그 표기(고유명사 원 표기·주제 한국어), 코드 인용은 원문 그대로, 발행본은 시점 기록이므로 소급 수정 금지 | `CLAUDE.md`, `_posts/2026-07-13-chirpy-to-type-theme.md` | Chirpy 편이 계약 테스트를 인용하며 정규식에 없는 `"`를 넣고 괄호를 뺌 — 하필 "검증 가능한 사실은 그 자리에서 검증하라"가 결론인 글이었음 (#30) |
