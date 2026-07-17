@@ -17,5 +17,10 @@ jobs:
         with:
           ruby-version: "3.4"
           bundler-cache: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
       - name: Verify generated site
         run: bundle exec ruby test/site_output_test.rb
+      - name: Verify search matching
+        run: node test/search_test.js
