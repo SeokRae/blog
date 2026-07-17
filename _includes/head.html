@@ -1,14 +1,29 @@
 <head>
 	<meta charset="utf-8">
-	<title>{% if page.title %}{{ page.title }} |{% endif %} {{ site.theme_settings.title }}</title>
+	<title>{% if page.title %}{{ page.title | escape }} |{% endif %} {{ site.theme_settings.title }}</title>
 	{% capture meta_description %}{% if page.excerpt %}{{ page.excerpt | strip_html | strip_newlines | truncate: 160 }}{% else %}{{ site.theme_settings.description }}{% endif %}{% endcapture %}
+	{% capture meta_title %}{% if page.title %}{{ page.title }}{% else %}{{ site.theme_settings.title }}{% endif %}{% endcapture %}
+	{% capture meta_url %}{{ page.url | replace: 'index.html', '' | absolute_url }}{% endcapture %}
 	<meta name="description" content="{{ meta_description | strip | escape }}">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 
 	<link rel="stylesheet" href="{{ '/assets/css/main.css' | relative_url }}">
 	<link rel="shortcut icon" href="{{ site.theme_settings.favicon | relative_url }}" type="image/x-icon">
-	<link rel="canonical" href="{{ page.url | replace: 'index.html', '' | absolute_url }}">
+	<link rel="canonical" href="{{ meta_url }}">
 	<link rel="alternate" type="application/atom+xml" title="{{ site.theme_settings.title }}" href="{{ '/feed.xml' | relative_url }}">
+
+	<!-- 링크 공유 미리보기. jekyll-seo-tag를 쓰면 title·canonical·description을 중복 emit하고
+	     계약 테스트가 잠근 canonical 형식과도 어긋나므로, 필요한 태그만 직접 둔다. (#22)
+	     og:image는 포스트에 feature-img가 없어 생략 — 이미지 없는 summary 카드가 맞다. -->
+	<meta property="og:type" content="{% if page.id %}article{% else %}website{% endif %}">
+	<meta property="og:site_name" content="{{ site.theme_settings.title | escape }}">
+	<meta property="og:title" content="{{ meta_title | strip | escape }}">
+	<meta property="og:description" content="{{ meta_description | strip | escape }}">
+	<meta property="og:url" content="{{ meta_url }}">
+	<meta property="og:locale" content="ko_KR">
+	<meta name="twitter:card" content="summary">
+	<meta name="twitter:title" content="{{ meta_title | strip | escape }}">
+	<meta name="twitter:description" content="{{ meta_description | strip | escape }}">
 
 	<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.2/css/all.css"
 		integrity="sha384-oS3vJWv+0UjzBfQzYUhtDYW+Pj2yciDJxpsK1OYPAYjqT085Qq/1cq5FLXAZQ7Ay" crossorigin="anonymous">
