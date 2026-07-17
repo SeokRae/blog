@@ -1,9 +1,9 @@
 ---
 layout: post
+date: 2026-07-13
 title: "옮긴 이유가 틀렸다는 걸 뒤늦게 알았다 — Chirpy에서 Type Theme로"
 subtitle: "테마를 바꾼 진짜 이유와, changelog에 적어둔 가짜 이유 사이에서 배운 것"
 tags: [Jekyll, GitHub Pages, 블로그, 회고]
-date: 2026-07-13
 ---
 
 이 블로그는 원래 [Chirpy](https://github.com/cotes2020/jekyll-theme-chirpy) 테마로 시작했다.
@@ -176,7 +176,7 @@ baseurl을 문자열로 손수 이어 붙이지 말고, `relative_url` 같은 Je
 
 ```ruby
 # test/site_output_test.rb — 생성된 HTML을 직접 단언
-refute_match %r{"url": "/blog//"}, search          # 이중 슬래시 재발 방지
+refute_match(%r{"url": "/blog//}, search)          # 이중 슬래시 재발 방지
 refute_includes about, "background-image: url('/blog/')"  # 홈 배경 요청 방지
 assert_includes search, 'integrity="sha384-'       # 검색 CDN 스크립트 SRI
 assert_includes search, 'aria-label="검색"'         # 접근성
