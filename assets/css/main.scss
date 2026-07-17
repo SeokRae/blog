@@ -99,3 +99,82 @@ article,
   outline: 2px solid #117964;
   outline-offset: 2px;
 }
+
+// ── 다크 모드 (#38 항목4) ──
+// Type Theme는 라이트 전용이라 색이 컴파일 CSS에 박혀 있다. import·라이트 오버라이드 뒤에
+// [data-theme="dark"] 스코프로 덮는다(라이트 규칙은 그대로 남아 계약 테스트도 유지). 테마는
+// <html>의 data-theme으로 전환하며, head.html의 인라인 스크립트가 저장된 선택/OS 설정을
+// paint 전에 적용한다. 모든 색은 다크 배경 기준 WCAG AA를 계산으로 확인했다.
+$dk-bg: #0f1420;
+$dk-code: #1b2130;
+$dk-text: #c9d3e0;
+$dk-head: #e6edf3;
+$dk-link: #4db6a0;   // 7.46:1
+$dk-muted: #8b98a9;  // 6.28:1
+$dk-border: rgba(255, 255, 255, 0.12);
+
+html[data-theme="dark"] { background: $dk-bg; }
+[data-theme="dark"] {
+  body { background: $dk-bg; color: $dk-text; }
+
+  h1, h2, h3, h4, h5, h6,
+  h1 a, h2 a, h3 a, h4 a, h5 a, h6 a,
+  .title, .site-title a, .site-header a { color: $dk-head; }
+
+  a { color: $dk-link; }
+  .body-link:hover, article a:hover, .posts .post-teaser p a:hover { color: lighten($dk-link, 12%); }
+
+  .meta, #post-nav p, .site-footer { color: $dk-muted; }
+
+  // 경계선
+  td, th, table, hr,
+  article, .comments, .posts .post-teaser, #post-nav,
+  blockquote { border-color: $dk-border; }
+  hr { border-top-color: $dk-border; border-bottom-color: $dk-bg; }
+
+  // 헤더 (배경·경계선)
+  .site-header { background: $dk-bg; border-bottom-color: $dk-border; }
+
+  // 검색 (input 기본 배경이 흰색이라 다크 헤더에 흰 박스가 뜬다 → 투명으로)
+  .site-header form { border-bottom-color: $dk-muted; }
+  .site-header form input,
+  .site-header form input[type=text] { background-color: transparent; }
+  .site-header form input[type=text],
+  .site-header form input::-moz-placeholder,
+  .site-header form input:-ms-input-placeholder,
+  .site-header form input::-webkit-input-placeholder,
+  .site-header form button { color: $dk-muted; }
+  .site-header form button { background-color: $dk-bg; }
+
+  // 선택 영역
+  ::selection { background: #2a3550; }
+  ::-moz-selection { background: #2a3550; }
+
+  // 코드 블록: 다크 코드 배경 + github-dark 계열 토큰 (전부 AA 확인)
+  pre, code, .highlight { background: $dk-code; color: $dk-head; }
+  code { border-radius: 4px; padding: 0.1em 0.35em; }
+  pre { border-radius: 8px; padding: 1em; }
+  pre code { padding: 0; background: none; }
+  .c, .cm, .c1, .cs, .cp, .cd { color: $dk-muted; }
+  .k, .kc, .kd, .kn, .kp, .kr, .kt, .o, .ow { color: #ff7b72; }
+  .s, .s1, .s2, .se, .sb, .sc, .sd, .sh, .si, .sx, .sr, .ss, .dl { color: #a5d6ff; }
+  .na, .nb, .nc, .nf, .nl, .nn, .nt, .nv, .vc, .vg, .vi, .no, .bp { color: #7ee787; }
+  .m, .mi, .mf, .mo, .mh, .il { color: #f2cc60; }
+  .nd, .ni, .nx { color: #d2a8ff; }
+  .p, .nx { color: $dk-text; }
+  .gi { color: #7ee787; background-color: rgba(63, 185, 80, 0.12); }
+  .gd { color: #ff7b72; background-color: rgba(248, 81, 73, 0.12); }
+}
+
+// 테마 토글 버튼
+.theme-toggle {
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  color: inherit;
+  line-height: 1;
+}
+.theme-toggle .icon-sun { display: none; }
+[data-theme="dark"] .theme-toggle .icon-sun { display: inline; }
+[data-theme="dark"] .theme-toggle .icon-moon { display: none; }
