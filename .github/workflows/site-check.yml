@@ -12,12 +12,15 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: ruby/setup-ruby@v1
         with:
           ruby-version: "3.4"
           bundler-cache: true
-      - uses: actions/setup-node@v4
+      # v5부터 Node 24를 쓴다 — v4는 Node 20 타깃이라 러너가 매 실행마다 deprecation 경고를 냈다.
+      # setup-node v5·v6의 자동 캐싱 breaking change는 이 저장소와 무관하다: 캐싱은 package.json이
+      # npm을 지정할 때만 켜지는데(action.yml의 package-manager-cache), 여기엔 package.json이 없다.
+      - uses: actions/setup-node@v7
         with:
           node-version: "22"
       - name: Verify generated site
