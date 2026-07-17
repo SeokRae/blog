@@ -27,16 +27,19 @@ layout: default
             {{ post.title }}
           </a>
         </h1>
+        {% assign reading_chars = post.content | strip_html | size %}
+        {% assign reading_min = reading_chars | divided_by: 500 | plus: 1 %}
         <p class="meta">
-          {{ post.date | date: "%B %-d, %Y" }}
+          {{ post.date | date: "%B %-d, %Y" }} · {{ reading_min }}분 읽기
         </p>
       </header>
       <div class="excerpt">
-        {{ post.content | replace: '</p>', ' </p>' | strip_html | strip_newlines | truncate: 150 }}
+        {{ post.content | strip_html | strip | truncate: 150 }}
         <a class="button" href="{{ post.url | relative_url }}">
           {{ site.theme_settings.str_continue_reading }}
         </a>
       </div>
+      {% include tags_list.html tags=post.tags tag_count=post.tags.size %}
     </div>
     {% endfor %}
   </div>

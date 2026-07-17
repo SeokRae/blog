@@ -124,7 +124,7 @@ html[data-theme="dark"] { background: $dk-bg; }
   a { color: $dk-link; }
   .body-link:hover, article a:hover, .posts .post-teaser p a:hover { color: lighten($dk-link, 12%); }
 
-  .meta, #post-nav p, .site-footer { color: $dk-muted; }
+  .meta, #post-nav p, .site-footer, .tags .tag, .tag-title { color: $dk-muted; }
 
   // 경계선
   td, th, table, hr,
