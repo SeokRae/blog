@@ -24,6 +24,8 @@ node test/search_test.js                    # 검색 매칭 계약 검증 (CI와
 
 오버라이드는 특정 계약을 고치려고 존재한다 — 한국어 `lang`, 절대 canonical URL, escape된 description meta, 링크 공유용 OG/Twitter 메타, 접근 가능한 검색(`aria-label`), 검색 URL 이중 슬래시 방지, `/blog/page2/` 페이지네이션 경로, **외부 요청 없는 페이지**(스크립트·스타일시트 모두), **WCAG AA 색 대비**. 이 계약들은 **`test/site_output_test.rb`에 잠겨 있다.** 오버라이드를 수정하면 계약 assertion이 깨질 수 있으니 반드시 테스트를 돌린다.
 
+`_config.yml`의 `exclude`는 **이 저장소의 파일에만 먹고 테마 fall-through 파일에는 안 먹는다** (실험으로 확인). 그래서 미사용 테마 에셋(`sample_feature_img*.png`·`avatar.png`·`katex_init.js`, 합 168KB)이 발행되지만 **어떤 페이지도 참조하지 않아 실사용 영향이 없다.** 빈 파일로 shadow하면 0바이트로 줄일 수는 있으나, 저장소에 설명 불가능한 빈 파일이 남아 문제보다 해법이 나쁘다 — 그대로 둔다 (#32).
+
 `_includes/icons.html`은 **쓰는 아이콘만** 인라인 SVG로 담는다 — 테마 원본은 20여 개 소셜 서비스를 FontAwesome으로 분기하는데, 그 55KB를 아이콘 3개 때문에 받고 있었다 (#24). ⚠️ `_config.yml`에서 여기 없는 서비스(twitter 등)를 켜도 렌더되지 않으니 아이콘을 함께 추가해야 한다.
 
 `assets/css/main.scss`는 `@import "type-theme"` **전에** `$link-color`·`$search-color`·`$tags-color`를 재정의한다 — 테마 기본값이 WCAG AA 대비에 미달하고, `!default` 변수라 import 전이 정석이다. 값이 박힌 rouge 색은 import 후 규칙으로 덮는다 (#26).
@@ -54,3 +56,4 @@ GitHub Pages가 main push(= PR merge) 시 네이티브 빌드한다. `.github/wo
 | 2026-07-17 | 링크 공유용 OG/Twitter 메타 추가(jekyll-seo-tag 대신 수동 — 플러그인이 title·canonical·description을 중복 emit하고 계약 테스트가 잠근 canonical 형식과 어긋남), `<title>` 이스케이프, search·tags `sitemap: false` | `_includes/head.html`, `search.html`, `tags.html`, `test/site_output_test.rb` | 렌더된 head에 og:*·twitter:*가 전무해 링크 공유 미리보기가 fallback에만 의존 (#22) |
 | 2026-07-17 | FontAwesome 제거 — `_includes/icons.html`을 로컬 오버라이드로 승격하고 아이콘 3개(검색·RSS·GitHub)를 인라인 SVG로. aria-label 부여, `.icon` 크기 규칙 추가 | `_includes/{head,header,icons}.html`, `assets/css/main.scss`, `test/site_output_test.rb` | 아이콘 3개 때문에 all.css 55KB를 렌더 블로킹으로 받고 있었음. 제거로 사이트의 외부 리소스 요청이 0이 됨 (#24) |
 | 2026-07-17 | 색 대비 AA 확보 — `main.scss`에서 `@import` **전에** `$link-color`(#1ABC9C 2.41:1 → #117964 5.33:1)·`$search-color`·`$tags-color` 재정의(`!default`라 import 전이 정석), import 후 rouge 주석·의사이름색 오버라이드 | `assets/css/main.scss`, `test/site_output_test.rb` | 링크색이 본문 전체에서 AA에 크게 미달. Fable 검토는 "링크 teal은 통과"라 했으나 teal은 rouge `.na`/`.no`/`.nv` 색이었고 링크가 아니었음 (#26) |
+| 2026-07-17 | CI actions v4 → v7 (Node 20 deprecation 해소). 미사용 테마 에셋 168KB는 `exclude`가 테마 fall-through에 안 먹어 정리 불가 — 실험 결과와 판단 근거를 아키텍처 절에 기록 | `.github/workflows/site-check.yml`, `CLAUDE.md` | 러너가 매 실행마다 "actions target Node.js 20" 경고. setup-node 자동 캐싱 breaking change는 package.json이 없어 무관함을 action.yml로 확인 (#32) |
