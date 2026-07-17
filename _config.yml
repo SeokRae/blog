@@ -71,3 +71,4 @@ exclude:
   - README.md
   - LICENSE
   - CLAUDE.md
+  - test
