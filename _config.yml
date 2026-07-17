@@ -5,7 +5,10 @@ baseurl: "/blog"
 lang: ko
 timezone: Asia/Seoul
 
-remote_theme: rohanchandra/type-theme@c6ec5a69ff7dfe2df193be08515193c72bd4a55d
+# 업스트림 rohanchandra/type-theme는 archived(2023-01-15 마지막 push)다. jekyll-remote-theme이
+# 매 빌드마다 tarball을 받으므로 원본이 삭제·rename되면 배포와 CI가 동시에 깨진다.
+# SHA는 업스트림 master HEAD 그대로이고 fork는 가용성 확보 목적이다. (#14)
+remote_theme: SeokRae/type-theme@c6ec5a69ff7dfe2df193be08515193c72bd4a55d
 
 # THEME-SPECIFIC CONFIGURATION (Type Theme)
 theme_settings:
