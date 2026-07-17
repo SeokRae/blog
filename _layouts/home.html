@@ -1,0 +1,60 @@
+---
+layout: default
+---
+
+{% comment %}
+테마 home.html 오버라이드 (#38).
+- 티저 발췌를 post.excerpt(첫 문단)에서 본문 고정 길이 truncate로 바꿔 카드 길이를 통일한다.
+  첫 문단이 짧은 볼드 한 줄인 글과 긴 문단인 글의 티저 높이가 들쭉날쭉하던 문제 해소.
+- 페이지네이션 화살표는 테마 원본이 FontAwesome(<i class="fa">)을 쓰는데 #24에서
+  FontAwesome을 제거했으므로 인라인 SVG로 교체(포스트 6개 넘으면 깨지던 잠복 버그).
+{% endcomment %}
+
+<div class="home">
+  {% if site.theme_settings.header_text %}
+  <div class="call-out"
+  style="background-image: url('{{ site.baseurl }}/{{ site.theme_settings.header_text_feature_image }}')">
+    {{ site.theme_settings.header_text }}
+  </div>
+  {% endif %}
+
+  <div class="posts">
+    {% for post in paginator.posts %}
+    <div class="post-teaser">
+      <header>
+        <h1>
+          <a class="post-link" href="{{ post.url | relative_url }}">
+            {{ post.title }}
+          </a>
+        </h1>
+        <p class="meta">
+          {{ post.date | date: "%B %-d, %Y" }}
+        </p>
+      </header>
+      <div class="excerpt">
+        {{ post.content | replace: '</p>', ' </p>' | strip_html | strip_newlines | truncate: 150 }}
+        <a class="button" href="{{ post.url | relative_url }}">
+          {{ site.theme_settings.str_continue_reading }}
+        </a>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  {% if paginator.total_pages > 1 %}
+  <div class="pagination">
+    {% if paginator.previous_page %}
+    <a href="{{ paginator.previous_page_path | relative_url | replace: '//', '/' }}" class="button">
+      <svg class="icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M10 3 L5 8 L10 13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      {{ site.theme_settings.str_previous_page }}
+    </a>
+    {% endif %}
+    {% if paginator.next_page %}
+    <a href="{{ paginator.next_page_path | relative_url | replace: '//', '/' }}" class="button">
+      {{ site.theme_settings.str_next_page }}
+      <svg class="icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M6 3 L11 8 L6 13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </a>
+    {% endif %}
+  </div>
+  {% endif %}
+</div>
