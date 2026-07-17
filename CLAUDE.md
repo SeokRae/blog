@@ -20,6 +20,7 @@ node test/search_test.js                    # 검색 매칭 계약 검증 (CI와
 테마는 `_config.yml`의 `remote_theme`로 **커밋 고정**된 Type Theme다 (재현 가능한 빌드). 저장소의 파일은 같은 경로의 테마 파일을 **shadow**하고, 없는 파일은 고정된 원격 테마로 fall-through한다.
 
 - **로컬 오버라이드 (이 저장소에 있음)**: `_layouts/{default,page,post}.html`, `_includes/{head,header,icons}.html`, `assets/css/main.scss`(`type-theme` import 후 a11y·아이콘 규칙만 추가), `assets/js/search.js`, 페이지 파일(`index.html`·`about.md`·`search.html`·`tags.html`·`404.md`).
+- **루트 `sw.min.js`**: Type Theme와 무관한 tombstone 서비스 워커다. Chirpy(PWA) 시절 `/blog/sw.min.js`에 등록된 워커가 브라우저에 유령으로 남아 옛 캐시(포스트 없는 홈)를 계속 내주는 걸 자폭시킨다 (#34). **삭제 금지** — 지우면 영향받은 브라우저가 영구히 갇힌다. 정적 패스스루이므로 frontmatter 없이 그대로 `/blog/sw.min.js`로 발행된다.
 - **테마 상속 (저장소에 없음 — 여기서 찾지 말 것)**: `_layouts/{home,tags}.html`, `_includes/{footer,tags_list,post_nav,disqus}.html`, `_sass/type-theme.scss`.
 
 오버라이드는 특정 계약을 고치려고 존재한다 — 한국어 `lang`, 절대 canonical URL, escape된 description meta, 링크 공유용 OG/Twitter 메타, 접근 가능한 검색(`aria-label`), 검색 URL 이중 슬래시 방지, `/blog/page2/` 페이지네이션 경로, **외부 요청 없는 페이지**(스크립트·스타일시트 모두), **WCAG AA 색 대비**. 이 계약들은 **`test/site_output_test.rb`에 잠겨 있다.** 오버라이드를 수정하면 계약 assertion이 깨질 수 있으니 반드시 테스트를 돌린다.
@@ -68,3 +69,4 @@ GitHub Pages가 main push(= PR merge) 시 네이티브 빌드한다. `.github/wo
 | 2026-07-17 | 색 대비 AA 확보 — `main.scss`에서 `@import` **전에** `$link-color`(#1ABC9C 2.41:1 → #117964 5.33:1)·`$search-color`·`$tags-color` 재정의(`!default`라 import 전이 정석), import 후 rouge 주석·의사이름색 오버라이드 | `assets/css/main.scss`, `test/site_output_test.rb` | 링크색이 본문 전체에서 AA에 크게 미달. Fable 검토는 "링크 teal은 통과"라 했으나 teal은 rouge `.na`/`.no`/`.nv` 색이었고 링크가 아니었음 (#26) |
 | 2026-07-17 | 포스트 규칙 명문화 — frontmatter 필드 순서(`layout → date → title → subtitle → tags`), 태그 표기(고유명사 원 표기·주제 한국어), 코드 인용은 원문 그대로, 발행본은 시점 기록이므로 소급 수정 금지 | `CLAUDE.md`, `_posts/2026-07-13-chirpy-to-type-theme.md` | Chirpy 편이 계약 테스트를 인용하며 정규식에 없는 `"`를 넣고 괄호를 뺌 — 하필 "검증 가능한 사실은 그 자리에서 검증하라"가 결론인 글이었음 (#30) |
 | 2026-07-17 | CI actions v4 → v7 (Node 20 deprecation 해소). 미사용 테마 에셋 168KB는 `exclude`가 테마 fall-through에 안 먹어 정리 불가 — 실험 결과와 판단 근거를 아키텍처 절에 기록 | `.github/workflows/site-check.yml`, `CLAUDE.md` | 러너가 매 실행마다 "actions target Node.js 20" 경고. setup-node 자동 캐싱 breaking change는 package.json이 없어 무관함을 action.yml로 확인 (#32) |
+| 2026-07-18 | Chirpy PWA 유령 서비스 워커 자폭 — 루트에 tombstone `sw.min.js` 추가(activate에서 caches 삭제 + unregister + 열린 탭 navigate), 발행·내용 계약 테스트로 잠금 | `sw.min.js`, `test/site_output_test.rb`, `CLAUDE.md` | Chirpy 시절 방문한 브라우저에 `/blog/sw.min.js` 워커가 남아 포스트 없는 옛 캐시를 계속 내줌. 서버 404만으로는 등록이 안 지워짐 — 유효한 tombstone을 받아야 자폭 (#34) |

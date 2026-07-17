@@ -59,6 +59,13 @@ class SiteOutputTest < Minitest::Test
       refute File.exist?(File.join(destination, "blog", "page2", "index.html")), "Unexpected duplicated /blog/blog/page2/ output"
       refute File.exist?(File.join(destination, "test")), "test/ must not be published"
       assert_low_contrast_colors_replaced(css)
+      # Chirpy PWA가 /blog/sw.min.js에 심어둔 서비스 워커를 자폭시키는 tombstone. 이 경로가
+      # 비면 Chirpy 시절 방문자의 브라우저가 옛 캐시(포스트 없는 홈)에 영구히 갇힌다. (#34)
+      sw_path = File.join(destination, "sw.min.js")
+      assert File.exist?(sw_path), "tombstone 서비스 워커가 /blog/sw.min.js로 발행돼야 한다"
+      sw = File.read(sw_path)
+      assert_includes sw, "registration.unregister", "sw.min.js는 자기 등록을 해제해야 한다"
+      assert_includes sw, "caches.delete", "sw.min.js는 옛 캐시를 비워야 한다"
     end
   end
 
