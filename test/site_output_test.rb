@@ -77,6 +77,10 @@ class SiteOutputTest < Minitest::Test
       assert_match(%r{<svg[^>]*viewBox="0 0 906 553"}, flowcast_post, "flowcast 시퀀스 SVG가 인라인으로 남아야 한다")
       refute_match(%r{<link[^>]*rel="stylesheet"[^>]*href="https?://}, flowcast_post, "예시 다이어그램이 외부 스타일시트를 끌어오면 안 된다")
       refute_match(%r{<script[^>]*\ssrc="https?://}, flowcast_post, "예시 다이어그램이 외부 스크립트를 끌어오면 안 된다")
+      # 다이어그램은 색을 CSS 변수로만 갖는다. 다크 모드에서 사이트 테마를 따르도록
+      # [data-theme="dark"] .flowcast-embed가 팔레트 변수를 다크로 오버라이드해야 한다. (#40)
+      assert_match(/\[data-theme=("?)dark\1\]\s*\.flowcast-embed\s*\{/, flowcast_post,
+        "다크 모드에서 flowcast 다이어그램 팔레트를 오버라이드하는 규칙이 있어야 한다")
     end
   end
 
