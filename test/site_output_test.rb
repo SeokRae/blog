@@ -12,6 +12,7 @@ class SiteOutputTest < Minitest::Test
       source = File.realpath(source)
       copy_site_source(source)
       add_pagination_fixture(source)
+      add_test_dir_fixture(source)
 
       destination = File.join(source, "_site")
       stdout, stderr, status = Open3.capture3(
@@ -36,6 +37,7 @@ class SiteOutputTest < Minitest::Test
       refute_match(%r{"url": "/blog//}, search)
       assert File.exist?(File.join(destination, "page2", "index.html")), "Expected /blog/page2/ output"
       refute File.exist?(File.join(destination, "blog", "page2", "index.html")), "Unexpected duplicated /blog/blog/page2/ output"
+      refute File.exist?(File.join(destination, "test")), "test/ must not be published"
     end
   end
 
@@ -47,6 +49,14 @@ class SiteOutputTest < Minitest::Test
 
       FileUtils.cp_r(File.join(ROOT, entry), destination)
     end
+  end
+
+  # IGNORED_ENTRIES가 실제 test/를 복사에서 빼므로, 이 fixture 없이는 "test/ 발행 금지" 계약을
+  # 재현할 수 없다 — 테스트가 자기 발행을 스스로 검증하지 못하는 허점이었다. (#18)
+  def add_test_dir_fixture(source)
+    dir = File.join(source, "test")
+    FileUtils.mkdir_p(dir)
+    File.write(File.join(dir, "fixture_marker.rb"), "# must not reach _site\n")
   end
 
   def add_pagination_fixture(source)
