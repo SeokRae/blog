@@ -17,7 +17,7 @@ description: "블로그(~/IdeaProjects/blog, SeokRae/blog) 포스트 작성부�
 |---------|---------------|------|------|
 | blog-researcher | blog-researcher (커스텀) | 주제 → 근거 수집 (내부 1차·외부 2차) | `_drafts/{slug}.research.md` |
 | blog-writer | blog-writer (커스텀) | 근거 노트 → 초안 작성 | `_drafts/{slug}.md` |
-| blog-verifier | blog-verifier (커스텀) | `(확인 필요)` 플래그·사실 검증 | `_drafts/{slug}.md` (in-place) |
+| blog-verifier | blog-verifier (커스텀) | `(확인 필요)` 플래그·사실 검증 | `_drafts/{slug}.md` (in-place) + `_drafts/{slug}.research.md`의 `## 검증 기록` |
 | blog-editor | blog-editor (커스텀) | 초안 윤문 | `_drafts/{slug}.md` (in-place) |
 | blog-publisher | blog-publisher (커스텀) | 발행 검증 + git push + 배포 확인 | `_posts/{date}-{slug}.md` + 배포 URL |
 
@@ -47,8 +47,9 @@ description: "블로그(~/IdeaProjects/blog, SeokRae/blog) 포스트 작성부�
 ### Phase 1.5: 사실 검증
 
 `Agent(prompt: "_drafts/{slug}.md 검증 (리서치 노트: _drafts/{slug}.research.md)", subagent_type: "blog-verifier", model: "opus")`
-→ `(확인 필요)` 플래그를 확정/오류교정/확인불가로 처리한 초안(in-place) + 검증 요약(확정 N·교정 N·확인불가 N).
+→ `(확인 필요)` 플래그를 확정/오류교정/확인불가로 처리한 초안(in-place) + **리서치 노트의 `## 검증 기록` 절**(확정 포함 전 항목) + 검증 요약(확정 N·교정 N·확인불가 N).
 → **"확인 불가" 항목이 남으면 사용자에게 반드시 보고하고, 그대로 진행할지 확인한다.** 검증 없이 자동으로 윤문으로 넘어가지 않는다.
+→ **근거 사슬 게이트**: 본문의 외부 인용(논문·DOI·통계·표준·외부 도구 동작)이 전부 리서치 노트의 검증 기록에 있는지 확인한다. 빠진 게 있으면 verifier를 다시 돌린다 — 인용이 맞더라도 되짚을 수 없으면 발행 불가다. 초안의 `<!-- 검증: -->` 주석은 발행 시 제거되므로 근거 사슬로 치지 않는다 (#16).
 
 ### Phase 2: 윤문
 
