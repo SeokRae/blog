@@ -25,12 +25,53 @@ $tags-color: #6f6f6f;    // 5.02:1
   color: #6f6f6f; // 5.02:1 (was #999999, 2.85:1)
 }
 
-// 넓은 화면에서 본문 읽기 폭 제한 — 헤더/푸터는 .content 밖이라 전체 폭 유지,
-// 좁은 화면(<1080px)은 테마의 퍼센트 패딩 반응형이 그대로 동작한다.
+// 레이아웃 컬럼 통일 (#38). 테마 기본은 헤더가 전체폭(padding 3% 6%)인데 본문은 중앙
+// 컬럼이라 브랜드와 본문 좌측 edge가 어긋났다(1920폭에서 305px). 헤더 inner·본문·푸터를
+// 같은 폭·같은 좌우 패딩의 중앙 컬럼에 맞춰 한 좌측선에 정렬하고, 본문의 20% 좌우 패딩을
+// 컬럼 패딩으로 대체해 와이드 화면 여백을 줄인다.
+$page-max: 820px;
+$page-pad-x: 1.5rem;
+
 .content {
-  max-width: 1080px;
+  max-width: $page-max;
   margin-left: auto;
   margin-right: auto;
+}
+
+// 헤더 배경·하단 경계선은 전체폭 유지, 내용만 컬럼에 맞춘다
+.site-header .header-inner {
+  max-width: $page-max;
+  margin: 0 auto;
+  padding-left: $page-pad-x;
+  padding-right: $page-pad-x;
+  box-sizing: border-box;
+}
+.site-header {
+  padding-left: 0;
+  padding-right: 0;
+}
+
+// 본문 블록: 테마의 20%/12.5% 좌우 패딩을 컬럼 패딩으로 대체 → 브랜드와 같은 좌측선 정렬 + 읽기폭 확대
+article,
+.posts .post-teaser,
+.comments,
+#post-nav,
+.pagination {
+  padding-left: $page-pad-x;
+  padding-right: $page-pad-x;
+}
+.pagination {
+  padding-top: 2rem;
+}
+
+// 푸터도 같은 컬럼에 정렬
+.site-footer {
+  max-width: $page-max;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: $page-pad-x;
+  padding-right: $page-pad-x;
+  box-sizing: border-box;
 }
 
 // 아이콘은 인라인 SVG다(#24). 테마는 <i>를 직접 스타일링하지 않고 크기·정렬을 전부
