@@ -1,7 +1,29 @@
 ---
 ---
 
+// 테마 기본 색은 흰 배경에서 WCAG AA(일반 텍스트 4.5:1)에 미달한다. !default 변수라
+// import 전에 주면 규칙을 덮어쓰지 않고 값만 바뀐다. (#26)
+//   $link-color   #1ABC9C → 2.41:1  (본문 링크 전체 + .button 배경 위의 흰 글씨)
+//   $search-color #999    → 2.85:1  (검색 입력 글자·placeholder·아이콘·밑줄)
+//   $tags-color   #b0b0b0 → 2.17:1  (태그 목록·태그 제목)
+//
+// 링크색은 새로 만든 값이 아니다 — darken(#1ABC9C, 15%) ≈ #117964로, 테마가 이미
+// .button-link hover에 쓰고 이 파일이 focus outline에 쓰는 값이다. 톤이 유지된다.
+$link-color: #117964;    // 5.33:1
+$search-color: #6f6f6f;  // 5.02:1
+$tags-color: #6f6f6f;    // 5.02:1
+
 @import "type-theme";
+
+// rouge 색은 _syntax.scss에 값이 박혀 있어 변수로 못 바꾼다. 주석은 원래 olive-gray
+// 색조(hue 60°)를 유지한 채 어둡게 한다.
+.c, .cm, .c1 {
+  color: #70705f; // 5.03:1 (was #999988, 2.89:1)
+}
+
+.cp, .cs, .gh, .bp {
+  color: #6f6f6f; // 5.02:1 (was #999999, 2.85:1)
+}
 
 // 넓은 화면에서 본문 읽기 폭 제한 — 헤더/푸터는 .content 밖이라 전체 폭 유지,
 // 좁은 화면(<1080px)은 테마의 퍼센트 패딩 반응형이 그대로 동작한다.
