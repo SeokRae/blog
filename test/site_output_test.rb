@@ -31,6 +31,7 @@ class SiteOutputTest < Minitest::Test
       sitemap = File.read(File.join(destination, "sitemap.xml"))
       post = File.read(File.join(destination, "2026", "01", "20", "escaping-fixture.html"))
       css = File.read(File.join(destination, "assets", "css", "main.css"))
+      flowcast_post = File.read(File.join(destination, "2026", "07", "15", "flowcast-1-why-visual-docs.html"))
 
       assert_match(/<html[^>]+lang="ko"/, index)
       assert_match(%r{<link rel="canonical" href="https://seokrae\.github\.io/blog/">}, index)
@@ -66,6 +67,12 @@ class SiteOutputTest < Minitest::Test
       sw = File.read(sw_path)
       assert_includes sw, "registration.unregister", "sw.min.js는 자기 등록을 해제해야 한다"
       assert_includes sw, "caches.delete", "sw.min.js는 옛 캐시를 비워야 한다"
+      # flowcast 1편의 예시 다이어그램은 인라인 SVG여야 한다 — 시각 문서화 글의 자기 시연이자,
+      # kramdown이 raw HTML 블록을 통과시키는지의 회귀 방지. 외부 요청은 여전히 0. (#36)
+      assert_includes flowcast_post, 'class="flowcast-embed"', "flowcast 예시 다이어그램이 있어야 한다"
+      assert_match(%r{<svg[^>]*viewBox="0 0 906 553"}, flowcast_post, "flowcast 시퀀스 SVG가 인라인으로 남아야 한다")
+      refute_match(%r{<link[^>]*rel="stylesheet"[^>]*href="https?://}, flowcast_post, "예시 다이어그램이 외부 스타일시트를 끌어오면 안 된다")
+      refute_match(%r{<script[^>]*\ssrc="https?://}, flowcast_post, "예시 다이어그램이 외부 스크립트를 끌어오면 안 된다")
     end
   end
 
