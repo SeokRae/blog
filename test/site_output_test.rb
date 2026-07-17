@@ -46,6 +46,12 @@ class SiteOutputTest < Minitest::Test
       refute_includes sitemap, "/blog/search.html"
       refute_includes sitemap, "/blog/tags.html"
       refute_includes about, "background-image: url('/blog/')"
+      # 아이콘 3개(검색·RSS·GitHub)는 인라인 SVG다. 외부 요청 없이 렌더돼야 한다. (#24)
+      refute_match(%r{<link[^>]*\shref="https?://[^"]*\.css}, index, "외부 스타일시트를 받으면 안 된다")
+      refute_includes index, "fontawesome"
+      assert_match(%r{<svg class="icon"}, index)
+      assert_includes index, 'aria-label="Follow RSS feed"'
+      assert_includes index, 'aria-label="Follow on GitHub"'
       assert_includes search, 'aria-label="검색"'
       refute_match(%r{<script[^>]*\ssrc="https?://}, search, "검색은 외부 스크립트 없이 동작해야 한다")
       refute_match(%r{"url": "/blog//}, search)
