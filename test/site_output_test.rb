@@ -75,6 +75,12 @@ class SiteOutputTest < Minitest::Test
       assert_match(/localStorage\.getItem\('theme'\)/, index, "테마 적용 스크립트가 있어야 한다")
       assert_includes flowcast_post, 'class="flowcast-embed"', "flowcast 예시 다이어그램이 있어야 한다"
       assert_match(%r{<svg[^>]*viewBox="0 0 906 553"}, flowcast_post, "flowcast 시퀀스 SVG가 인라인으로 남아야 한다")
+      # 본문 표가 설명하는 세 관점(sequence·topology·component)은 그림으로도 전부 남아야 한다.
+      # topology·component 예시가 인라인 SVG로 함께 발행되는지 회귀 방지. (#44)
+      assert_match(%r{<svg[^>]*viewBox="12 -20 980 458"}, flowcast_post, "flowcast topology SVG가 인라인으로 남아야 한다")
+      assert_match(%r{<svg[^>]*viewBox="-4 -24 648 386"}, flowcast_post, "flowcast component SVG가 인라인으로 남아야 한다")
+      # 세 관점의 인터랙티브 버전으로 가는 라이브 갤러리 링크가 있어야 한다. (#44)
+      assert_includes flowcast_post, "https://seokrae.github.io/flowcast/", "flowcast 갤러리 링크가 있어야 한다"
       refute_match(%r{<link[^>]*rel="stylesheet"[^>]*href="https?://}, flowcast_post, "예시 다이어그램이 외부 스타일시트를 끌어오면 안 된다")
       refute_match(%r{<script[^>]*\ssrc="https?://}, flowcast_post, "예시 다이어그램이 외부 스크립트를 끌어오면 안 된다")
       # 다이어그램은 색을 CSS 변수로만 갖는다. 다크 모드에서 사이트 테마를 따르도록
