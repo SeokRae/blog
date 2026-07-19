@@ -147,7 +147,7 @@ flowcast를 처음부터 프로젝트 시각화 도구로 설계한 것은 아�
 
 지금 있는 것은 이 셋뿐이다. 소스 구조나 의존성, 데이터 흐름처럼 더 다뤄야 할 관점이 남아 있지만 아직 이름만 붙여둔 단계라 약속처럼 늘어놓지는 않겠다.
 
-위에서 본 시퀀스가 서비스의 **동작**을 시간순으로 본 것이라면, 같은 종류의 합성 데이터를 **실행 환경**(topology)과 **구성**(component) 관점으로 옮기면 아래처럼 다르게 보인다.
+위에서 본 시퀀스가 서비스의 **동작**을 시간순으로 본 것이라면, **실행 환경**(topology)과 **구성**(component)은 다른 질문에 답하는 관점이다. 세 예시는 같은 시스템이 아니라 관점마다 다른 합성 예제이고, flowcast로 그리면 각각 아래처럼 보인다.
 
 <figure class="flowcast-embed">
 <style>
@@ -198,7 +198,7 @@ flowcast를 처음부터 프로젝트 시각화 도구로 설계한 것은 아�
 <figcaption style="margin-top:0.75em;color:var(--muted);font-size:0.85em;text-align:center;">flowcast가 생성한 component 다이어그램 예시 — 포트를 가진 컴포넌트와 프로토콜 연결 (합성 데이터 · <a href="https://github.com/SeokRae/flowcast">SeokRae/flowcast</a>)</figcaption>
 </figure>
 
-세 관점을 직접 움직여 가며 보고 싶다면 [flowcast 예시 갤러리](https://seokrae.github.io/flowcast/)에 인터랙티브 버전이 있다.
+세 관점을 직접 움직여 가며 보고 싶다면 [flowcast 예제 갤러리](https://seokrae.github.io/flowcast/)에 인터랙티브 버전이 있다.
 
 앞으로도 모든 정보를 한 장에 욱여넣는 거대한 스킬을 만들 생각은 없다. 프로젝트를 이해하면서 생기는 질문마다 적합한 관점을 작은 스킬로 만들고, flowcast가 필요한 관점을 선택하고 조합하게 하는 방향을 생각하고 있다.
 
