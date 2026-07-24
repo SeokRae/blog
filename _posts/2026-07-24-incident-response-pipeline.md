@@ -8,9 +8,9 @@ tags: [장애대응, 회고, 아키텍처]
 
 오늘 결제 서비스에서 실패율이 급증했다.
 
-외부 연동 구간에서 커넥션 타임아웃이 터졌다. 요청이 커넥션을 기다리다 타임아웃되고, 클라이언트가 재시도하고, 재시도도 이미 고갈된 풀에서 대기하고, 타임아웃이 더 늘어나고, 재시도가 더 쌓인다. 이 재시도 폭풍(retry storm)은 적당한 부하를 몇 초 안에 전면 장애로 바꿔놓는다.
+외부 연동 구간에서 커넥션 타임아웃이 터졌다. 요청이 커넥션을 기다리다 타임아웃되고, 클라이언트가 재시도하고, 재시도도 이미 고갈된 풀에서 대기하고, 타임아웃이 더 늘어나고, 재시도가 더 쌓인다. 이 재시도 폭풍(retry storm)[^retry-storm]은 적당한 부하를 몇 초 안에 전면 장애로 바꿔놓는다.
 
-원인 자체는 기술적으로 단순한 편이었다. 커넥션 풀 조정, circuit breaker, 재시도 제한 같은 방어 수단은 알려져 있고, 원인을 알면 완화할 수 있다. 문제는 **원인을 아는 데까지 가는 시간**이 너무 오래 걸렸다는 거다.
+원인 자체는 기술적으로 단순한 편이었다. 커넥션 풀 조정, circuit breaker[^circuit-breaker], 재시도 제한 같은 방어 수단은 알려져 있고, 원인을 알면 완화할 수 있다. 문제는 **원인을 아는 데까지 가는 시간**이 너무 오래 걸렸다는 거다.
 
 되돌아보니 그 지연의 원인은 기술 부족이 아니었다.
 
@@ -22,7 +22,7 @@ tags: [장애대응, 회고, 아키텍처]
 
 알림이 왔다. 대시보드를 열었다. 실패율이 튄 걸 확인했다. 그다음 — 누가 어떤 구간을 먼저 확인하는지가 불분명했다. 여러 사람이 각자 판단으로 제각기 구간을 들여다봤다. 누군가는 로그를 뒤졌고, 누군가는 네트워크 상태를 봤고, 누군가는 외부 연동 상태를 확인했다. 서로 뭘 하는지 몰랐고, 같은 구간을 중복으로 보는 사람도 있었고, 정작 봐야 할 구간을 아무도 안 보기도 했다.
 
-Google SRE 책은 이런 상태를 정확히 짚는다 — 비관리 인시던트에서 엔지니어들이 조율 없이 각자 시스템을 변경하는 것을 "freelancing"이라 부른다. 기술에 몰두한 나머지 상황 인식(situational awareness)을 잃고, 리더십이 현황을 파악하지 못하고, 소통이 끊겨 위임조차 불가능해지는 상태.
+Google SRE 책은 이런 상태를 정확히 짚는다 — 비관리 인시던트에서 엔지니어들이 조율 없이 각자 시스템을 변경하는 것을 "freelancing"[^freelancing]이라 부른다. 기술에 몰두한 나머지 상황 인식(situational awareness)을 잃고, 리더십이 현황을 파악하지 못하고, 소통이 끊겨 위임조차 불가능해지는 상태.
 
 오늘 우리가 정확히 그 상태였다.
 
@@ -46,7 +46,7 @@ Google SRE 책은 이런 상태를 정확히 짚는다 — 비관리 인시던�
 
 돌이켜보면, 우리가 장애 대응이라고 생각한 건 "알림 받고 → 원인 찾고 → 고친다" 정도였다. 3단계. 실제로는 빠져 있는 단계들이 있었고, 빠진 단계마다 대응이 늦어졌다.
 
-인시던트 대응 라이프사이클은 7단계로 정리된다.
+인시던트 대응 라이프사이클은 7단계로 정리된다.[^lifecycle]
 
 **1. 준비(Preparation).** 런북, 역할 분담, 연락 체계를 사전에 정의해두는 단계다. 이게 없으면 장애가 터졌을 때 "분 단위로 중요한 순간에 눈먼 채로 허둥대게"(scramble blindly when minutes matter) 된다. 오늘 우리가 그랬다.
 
@@ -58,7 +58,7 @@ Google SRE 책은 이런 상태를 정확히 짚는다 — 비관리 인시던�
 
 **5. 해결(Resolution).** 근본 원인을 제거하는 단계다. 커넥션 풀 설정 조정, 외부 연동 구간 복구 등. 원인을 알아야 가능하므로, 완화로 시간을 번 뒤에 차분하게 진행해야 한다.
 
-**6. 복구(Recovery).** 시스템을 정상 상태로 되돌리는 단계다. 여기서 조급하면 같은 장애가 재발한다 — 이른바 "요요 장애(yo-yo outages)."
+**6. 복구(Recovery).** 시스템을 정상 상태로 되돌리는 단계다. 여기서 조급하면 같은 장애가 재발한다 — 이른바 "요요 장애(yo-yo outages)."[^yoyo]
 
 **7. 사후조치(Postmortem).** 무슨 일이 있었고, 왜 일어났고, 다음에 어떻게 막을지를 기록하는 단계다. 이건 별도로 얘기할 만큼 중요한 게 있어서 아래에서 따로 쓴다.
 
@@ -70,7 +70,7 @@ Google SRE 책은 이런 상태를 정확히 짚는다 — 비관리 인시던�
 
 실패는 명확하다. 요청이 거부됐고, 결제가 안 됐다. 사용자에게 안내하면 된다. 그런데 타임아웃은 "결제가 된 건지 안 된 건지 모르는" 상태를 만든다. 요청을 보냈는데 응답을 못 받았으니, 상대 시스템에서 처리됐을 수도, 안 됐을 수도 있다.
 
-이 불확실 상태(indeterminate state)에서 재시도 판단이 어려워진다. 재시도했는데 원래 요청이 사실 성공했었다면? 이중 결제가 된다. 그래서 결제 시스템에는 idempotency key 같은 안전장치가 필요하다 — 같은 키로 재요청이 오면 재처리하지 않고 저장된 결과를 돌려주는 방식이다.
+이 불확실 상태(indeterminate state)에서 재시도 판단이 어려워진다. 재시도했는데 원래 요청이 사실 성공했었다면? 이중 결제가 된다. 그래서 결제 시스템에는 idempotency key[^idempotency] 같은 안전장치가 필요하다 — 같은 키로 재요청이 오면 재처리하지 않고 저장된 결과를 돌려주는 방식이다.
 
 여기서 장애 대응과 연결된다. **안전장치 없이는 장애 대응 자체가 새로운 장애를 만든다.** 타임아웃 장애가 터졌을 때 "재시도하면 되지"라는 판단이, idempotency가 없는 시스템에서는 이중 과금을 만든다. 장애 완화가 더 큰 장애를 만드는 역설.
 
@@ -91,7 +91,7 @@ Google SRE Workbook에 있는 한 문장이 정곡을 찌른다.
 - 액션 아이템 **완료율을 추적**한다.
 - postmortem 작업을 기능 개발과 **동등한 우선순위**로 다룬다.
 
-그리고 이 모든 것의 전제가 **blameless** 문화다.
+그리고 이 모든 것의 전제가 **blameless**[^blameless] 문화다.
 
 "사람을 고칠 수 없다. 시스템을 고쳐라 (You can't 'fix' people, but you can fix systems)." 비난 문화에서는 정보가 숨겨진다. 장애의 원인을 사람의 실수에 귀착시키면, 다음부터는 실수를 보고하지 않게 된다. Dan Milstein의 말이 이걸 잘 요약한다 — "Let's plan for a future where we're all as stupid as we are today." 사람의 주의력 향상에 기대는 대책은 대책이 아니다. 런북, 자동 알림, circuit breaker 같은 시스템적 방어가 진짜 대책이다.
 
@@ -108,7 +108,7 @@ Google SRE Workbook에 있는 한 문장이 정곡을 찌른다.
 ### 2. 탐지 → 트리아지
 
 - 알림이 오면 **트리아지부터 한다**. 심각도 판정, 영향 범위 파악, 역할 배정. "각자 알아서"가 아니라 "누가 무엇을 본다"를 정한다.
-- MTTA(Mean Time to Acknowledge)를 의식한다 — 문제를 인지하는 데 걸리는 시간이 전체 MTTR의 시작점이다.
+- MTTA(Mean Time to Acknowledge)를 의식한다 — 문제를 인지하는 데 걸리는 시간이 전체 MTTR[^mttr]의 시작점이다.
 
 ### 3. 완화 먼저, 원인 규명은 그다음
 
@@ -135,3 +135,12 @@ Google SRE Workbook에 있는 한 문장이 정곡을 찌른다.
 커넥션 타임아웃은 알면 고친다. 하지만 누가 어떤 구간을 먼저 보고, 확산을 언제 멈추고, 원인 규명은 그다음에 하고, 끝나고 나서 뭘 바꿔야 하는지 — 이 흐름이 없으면 "아는 것"이 "고치는 것"으로 연결되지 않는다.
 
 오늘 겪은 장애의 근본 원인은 커넥션 타임아웃이다. 하지만 대응이 늦어진 근본 원인은 파이프라인의 부재다. 기술적 원인은 고쳤다. 이제 프로세스적 원인을 고칠 차례다.
+
+[^retry-storm]: 실패한 요청이 재시도되면서 이미 고갈된 자원(커넥션 풀 등)에 더 많은 부하를 얹고, 그 부하가 더 많은 실패와 재시도를 낳는 악순환. Michael Nygard가 *Release It!*(2007)에서 다룬 문제를 Martin Fowler가 Circuit Breaker 패턴으로 정리했다. — [Martin Fowler, "CircuitBreaker"](https://martinfowler.com/bliki/CircuitBreaker.html)
+[^circuit-breaker]: 반복적으로 실패하는 호출 대상에 일정 시간 요청을 차단해 장애가 다른 시스템으로 번지는 걸 막는 패턴. — [Martin Fowler, "CircuitBreaker"](https://martinfowler.com/bliki/CircuitBreaker.html)
+[^freelancing]: 인시던트 대응 중 엔지니어들이 서로 조율 없이 각자 판단으로 시스템을 변경하는 상태. Google SRE Book이 비관리 인시던트의 전형적 실패 패턴으로 지목한다. — [Google SRE Book, Ch.14 Managing Incidents](https://sre.google/sre-book/managing-incidents/)
+[^lifecycle]: Preparation, Detection and Alerting, Triage and Prioritization, Containment, Resolution and Eradication, Recovery, Postmortem and Continuous Improvement. — [Rootly, "Incident Response Lifecycle Process"](https://rootly.com/incident-response/lifecycle-process)
+[^yoyo]: 복구를 서두르다 회귀 모니터링 없이 트래픽을 되돌려 같은 실패 모드가 다시 나타나는 현상. — [Rootly, "Incident Response Lifecycle Process"](https://rootly.com/incident-response/lifecycle-process)
+[^idempotency]: 클라이언트가 요청에 고유 키를 실어 보내고, 서버는 같은 키로 재요청이 오면 재처리 없이 저장된 결과를 그대로 돌려준다. 이 장치가 없으면 타임아웃 뒤의 재시도가 이중 결제로 이어질 수 있다. — [DZone, "Art of Idempotency"](https://dzone.com/articles/art-of-idempotency-preventing-double-charges-and-duplicate)
+[^blameless]: 인시던트에 관여한 모두가 그 순간 가진 정보로 최선의 판단을 했다고 전제하는 회고 문화. 비난 문화에서는 처벌이 두려워 문제가 드러나지 않는다는 게 핵심 근거다. — [Google SRE Book, Ch.15 Postmortem Culture](https://sre.google/sre-book/postmortem-culture/)
+[^mttr]: MTTR(Mean Time to Resolve) — 탐지부터 완전 복구까지 걸리는 총 시간. 관측 가능성, 명확한 역할, 숙달된 런북에 투자한 팀이 개인의 영웅적 대응에 의존하는 팀보다 낮은 MTTR을 기록한다. — [PagerDuty, "Best Practices to Reduce MTTR"](https://www.pagerduty.com/resources/incident-management-response/learn/best-practices-to-reduce-mttr/)
