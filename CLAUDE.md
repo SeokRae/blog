@@ -53,6 +53,8 @@ GitHub Pages가 main push(= PR merge) 시 네이티브 빌드한다. `.github/wo
 
 **트리거:** 블로그 글 작성/윤문/발행 요청 시 `blog-pipeline` 스킬을 사용하라. 단순 설정 질문은 직접 응답 가능.
 
+**출처:** 서브 에이전트(`blog-researcher`/`writer`/`verifier`/`editor`/`publisher`)와 `blog-pipeline` 스킬은 이 저장소가 아니라 별도 플러그인 [`SeokRae/sr-blog-harness`](https://github.com/SeokRae/sr-blog-harness)에서 온다 (`~/.claude/settings.json`의 `enabledPlugins`로 전역 활성화). 하네스 자체를 수정하려면 이 저장소가 아니라 그쪽 레포를 고쳐야 한다.
+
 **변경 이력:**
 | 날짜 | 변경 내용 | 대상 | 사유 |
 |------|----------|------|------|
@@ -67,6 +69,7 @@ GitHub Pages가 main push(= PR merge) 시 네이티브 빌드한다. `.github/wo
 | 2026-07-17 | 링크 공유용 OG/Twitter 메타 추가(jekyll-seo-tag 대신 수동 — 플러그인이 title·canonical·description을 중복 emit하고 계약 테스트가 잠근 canonical 형식과 어긋남), `<title>` 이스케이프, search·tags `sitemap: false` | `_includes/head.html`, `search.html`, `tags.html`, `test/site_output_test.rb` | 렌더된 head에 og:*·twitter:*가 전무해 링크 공유 미리보기가 fallback에만 의존 (#22) |
 | 2026-07-17 | FontAwesome 제거 — `_includes/icons.html`을 로컬 오버라이드로 승격하고 아이콘 3개(검색·RSS·GitHub)를 인라인 SVG로. aria-label 부여, `.icon` 크기 규칙 추가 | `_includes/{head,header,icons}.html`, `assets/css/main.scss`, `test/site_output_test.rb` | 아이콘 3개 때문에 all.css 55KB를 렌더 블로킹으로 받고 있었음. 제거로 사이트의 외부 리소스 요청이 0이 됨 (#24) |
 | 2026-07-17 | 색 대비 AA 확보 — `main.scss`에서 `@import` **전에** `$link-color`(#1ABC9C 2.41:1 → #117964 5.33:1)·`$search-color`·`$tags-color` 재정의(`!default`라 import 전이 정석), import 후 rouge 주석·의사이름색 오버라이드 | `assets/css/main.scss`, `test/site_output_test.rb` | 링크색이 본문 전체에서 AA에 크게 미달. Fable 검토는 "링크 teal은 통과"라 했으나 teal은 rouge `.na`/`.no`/`.nv` 색이었고 링크가 아니었음 (#26) |
+| 2026-07-29 | `.claude/agents/blog-*`, `.claude/skills/blog-pipeline`을 독립 플러그인 [`SeokRae/sr-blog-harness`](https://github.com/SeokRae/sr-blog-harness)로 이관 — 이 저장소에서는 삭제, `~/.claude/settings.json` `enabledPlugins`로 전역 활성화 | `.claude/agents/*` 삭제, `.claude/skills/blog-pipeline/` 삭제, `CLAUDE.md` | 하네스를 다른 프로젝트에도 재사용 가능하게 git 배포·마켓플레이스 관리로 전환 (사용자 요청) |
 | 2026-07-17 | 포스트 규칙 명문화 — frontmatter 필드 순서(`layout → date → title → subtitle → tags`), 태그 표기(고유명사 원 표기·주제 한국어), 코드 인용은 원문 그대로, 발행본은 시점 기록이므로 소급 수정 금지 | `CLAUDE.md`, `_posts/2026-07-13-chirpy-to-type-theme.md` | Chirpy 편이 계약 테스트를 인용하며 정규식에 없는 `"`를 넣고 괄호를 뺌 — 하필 "검증 가능한 사실은 그 자리에서 검증하라"가 결론인 글이었음 (#30) |
 | 2026-07-17 | CI actions v4 → v7 (Node 20 deprecation 해소). 미사용 테마 에셋 168KB는 `exclude`가 테마 fall-through에 안 먹어 정리 불가 — 실험 결과와 판단 근거를 아키텍처 절에 기록 | `.github/workflows/site-check.yml`, `CLAUDE.md` | 러너가 매 실행마다 "actions target Node.js 20" 경고. setup-node 자동 캐싱 breaking change는 package.json이 없어 무관함을 action.yml로 확인 (#32) |
 | 2026-07-18 | Chirpy PWA 유령 서비스 워커 자폭 — 루트에 tombstone `sw.min.js` 추가(activate에서 caches 삭제 + unregister + 열린 탭 navigate), 발행·내용 계약 테스트로 잠금 | `sw.min.js`, `test/site_output_test.rb`, `CLAUDE.md` | Chirpy 시절 방문한 브라우저에 `/blog/sw.min.js` 워커가 남아 포스트 없는 옛 캐시를 계속 내줌. 서버 404만으로는 등록이 안 지워짐 — 유효한 tombstone을 받아야 자폭 (#34) |
