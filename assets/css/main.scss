@@ -46,6 +46,29 @@ pre code { padding: 0; background: none; }
   color: #006a8c; // 5.60:1 on #f5f5f5 (was #0086b3, 3.81:1)
 }
 
+// 각주 목록이 테마 기본값(list-style-position: inside)이라 <li> 안 kramdown이 넣는 <p>가
+// 블록 요소라서 번호("1.")가 본문과 분리된 한 줄로 떨어지고, 문단은 다음 줄부터 시작됐다.
+// outside로 바꾸고 <ol>에 들여쓰기를 줘 번호가 옆에 걸리는 매달림 인덴트로 만든다. 본문과의
+// 경계도 없어서 위에 구분선을 추가한다.
+.footnotes {
+  margin-top: 3em;
+  padding-top: 1.5em;
+  border-top: 1px solid rgba(0, 0, 0, 0.12);
+}
+.footnotes ol {
+  padding-left: 1.4em;
+}
+.footnotes li {
+  list-style-position: outside;
+  margin-bottom: 1em;
+}
+.footnotes li p {
+  margin: 0;
+}
+.footnotes a.reversefootnote {
+  margin-left: 0.3em;
+}
+
 // 레이아웃 컬럼 통일 (#38). 테마 기본은 헤더가 전체폭(padding 3% 6%)인데 본문은 중앙
 // 컬럼이라 브랜드와 본문 좌측 edge가 어긋났다(1920폭에서 305px). 헤더 inner·본문·푸터를
 // 같은 폭·같은 좌우 패딩의 중앙 컬럼에 맞춰 한 좌측선에 정렬하고, 본문의 20% 좌우 패딩을
@@ -162,6 +185,7 @@ html[data-theme="dark"] { background: $dk-bg; }
   article, .comments, .posts .post-teaser, #post-nav,
   blockquote { border-color: $dk-border; }
   hr { border-top-color: $dk-border; border-bottom-color: $dk-bg; }
+  .footnotes { border-top-color: $dk-border; }
 
   // 헤더 (배경·경계선)
   .site-header { background: $dk-bg; border-bottom-color: $dk-border; }
