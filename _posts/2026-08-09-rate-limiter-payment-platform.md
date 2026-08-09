@@ -209,10 +209,13 @@ stopwatch.sleepMicrosUninterruptibly(microsToWait);
   --line:rgba(104,182,255,0.75);--fill:rgba(104,182,255,0.16);--warn:#ff9a5c;--ok:#5cd696;
 }
 .rl-algo-embed .rl-grid{
-  display:grid;grid-template-columns:repeat(2,1fr);gap:2.6em 1.5em;
+  display:grid;grid-template-columns:repeat(3,1fr);gap:2.2em 1em;
 }
-@media (max-width: 560px){
-  .rl-algo-embed .rl-grid{ grid-template-columns:1fr; gap:2.2em; }
+@media (max-width: 700px){
+  .rl-algo-embed .rl-grid{ grid-template-columns:repeat(2,1fr); gap:2.2em 0.8em; }
+}
+@media (max-width: 460px){
+  .rl-algo-embed .rl-grid{ grid-template-columns:1fr; gap:2em; }
 }
 .rl-algo-embed .rl-panel{ text-align:center; }
 .rl-algo-embed .rl-title{ font-family:var(--font); font-size:0.92em; font-weight:700; color:var(--text); margin:0 0 0.4em; }
