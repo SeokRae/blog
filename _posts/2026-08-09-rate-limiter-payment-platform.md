@@ -338,6 +338,8 @@ Stripe도 같은 구분을 두고 리미터를 4종 운영한다고 공개했어
 
 그러니까 트레이드오프를 고르는 것보다 먼저 해야 할 일은, **지금 무엇이 나 대신 골라져 있는지 확인하는 것**입니다. 라이브러리 기본값이 곧 정책이니까요.
 
+조금 더 넓혀 보면, 이 사고는 "기능을 구현했는가"와 "위험을 통제하고 있는가"가 서로 다른 질문이라는 이야기이기도 합니다. 레이트리미터는 구현 여부로만 보면 사고 전에도 이미 있었어요. bucket4j 버전도 Guava 버전도 코드는 정상적으로 돌아가고 있었으니까요. 하지만 위험 통제 여부로 보면 얘기가 달라집니다. 버스트가 1인지 30인지, 그 값을 누가 정했고 왜 그렇게 정했는지를 설명할 수 있는가가 진짜 질문이었습니다. 서비스는 "동작하는가"로 완성되지만, 안전은 "지금 무엇을 통제하고 있는지 설명할 수 있는가"로 완성돼요.
+
 마지막으로 하나. 이 글의 사고는 코드 리뷰에서 잡히지 않았습니다. diff만 보면 라이브러리 임포트가 바뀌고, 한 줄이 짧아지고, try/catch가 사라진 게 전부예요. 하나같이 "정리된 것처럼" 보입니다. **삭제된 javadoc 세 줄만 읽었다면 잡혔을 겁니다.** 리뷰에서 추가된 코드는 다들 열심히 보는데, 삭제된 주석은 잘 안 봐요. 이번에 거기에 정책이 들어 있었습니다.
 
 [^rfc6585]: 429 Too Many Requests의 정본은 RFC 6585 §4다. "The 429 status code indicates that the user has sent too many requests in a given amount of time ('rate limiting')." 참고로 `Retry-After`는 **MAY**이지 필수가 아니다("MAY include a Retry-After header"). `Retry-After` 자체의 정의는 RFC 9110 §10.2.3에 있다. 다만 그 절이 예로 드는 건 503과 3xx뿐이고, RFC 9110 전문에는 `429`라는 문자열이 한 번도 등장하지 않는다(429는 RFC 6585 소관이다). 원문: "Servers send the "Retry-After" header field to indicate how long the user agent ought to wait before making a follow-up request." 출처: [RFC 6585](https://www.rfc-editor.org/rfc/rfc6585), [RFC 9110 §10.2.3](https://www.rfc-editor.org/rfc/rfc9110.html#name-retry-after)
