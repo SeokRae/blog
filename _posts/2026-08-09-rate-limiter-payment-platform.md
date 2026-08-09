@@ -209,13 +209,10 @@ stopwatch.sleepMicrosUninterruptibly(microsToWait);
   --line:rgba(104,182,255,0.75);--fill:rgba(104,182,255,0.16);--warn:#ff9a5c;--ok:#5cd696;
 }
 .rl-algo-embed .rl-grid{
-  display:grid;grid-template-columns:repeat(3,1fr);gap:2.6em 1em;
+  display:grid;grid-template-columns:repeat(2,1fr);gap:2.6em 1.5em;
 }
-@media (max-width: 640px){
-  .rl-algo-embed .rl-grid{ grid-template-columns:repeat(2,1fr); gap:2.2em 0.8em; }
-}
-@media (max-width: 420px){
-  .rl-algo-embed .rl-grid{ grid-template-columns:1fr; }
+@media (max-width: 560px){
+  .rl-algo-embed .rl-grid{ grid-template-columns:1fr; gap:2.2em; }
 }
 .rl-algo-embed .rl-panel{ text-align:center; }
 .rl-algo-embed .rl-title{ font-family:var(--font); font-size:0.92em; font-weight:700; color:var(--text); margin:0 0 0.4em; }
@@ -231,6 +228,32 @@ stopwatch.sleepMicrosUninterruptibly(microsToWait);
 .rl-algo-embed .rl-ok{ fill:var(--ok); }
 .rl-algo-embed .rl-warn{ fill:var(--warn); }
 figcaption{ margin-top:0.9em;color:var(--muted);font-size:0.85em;text-align:center; font-family: -apple-system, sans-serif;}
+
+/* ---- 메모리(키당 상태) 인디케이터 ---- */
+/* O(1): 눈금 1칸 고정, 애니메이션 없음 — "요청이 늘어도 상태는 안 늘어난다"가 메시지 */
+.rl-algo-embed .rl-mem-track{ fill:none; stroke:var(--border); stroke-width:1; }
+.rl-algo-embed .rl-mem-fixed{ fill:var(--accent); }
+.rl-algo-embed .rl-mem-label{ fill:var(--muted); font-size:6.5px; letter-spacing:0.02em; }
+
+/* O(n): Sliding Window Log — 요청마다 눈금이 하나씩 차오르고, 루프가 돌면 비운다 */
+.mem-log-1{ animation: mem-log-1 5s linear infinite; opacity:0; }
+.mem-log-2{ animation: mem-log-2 5s linear infinite; opacity:0; }
+.mem-log-3{ animation: mem-log-3 5s linear infinite; opacity:0; }
+.mem-log-4{ animation: mem-log-4 5s linear infinite; opacity:0; }
+.mem-log-5{ animation: mem-log-5 5s linear infinite; opacity:0; }
+@keyframes mem-log-1{ 0%,4%{opacity:0;} 6%{opacity:1;} 90%{opacity:1;} 94%{opacity:0;} 100%{opacity:0;} }
+@keyframes mem-log-2{ 0%,18%{opacity:0;} 20%{opacity:1;} 90%{opacity:1;} 94%{opacity:0;} 100%{opacity:0;} }
+@keyframes mem-log-3{ 0%,33%{opacity:0;} 35%{opacity:1;} 90%{opacity:1;} 94%{opacity:0;} 100%{opacity:0;} }
+@keyframes mem-log-4{ 0%,48%{opacity:0;} 50%{opacity:1;} 90%{opacity:1;} 94%{opacity:0;} 100%{opacity:0;} }
+@keyframes mem-log-5{ 0%,63%{opacity:0;} 65%{opacity:1;} 90%{opacity:1;} 94%{opacity:0;} 100%{opacity:0;} }
+
+/* O(큐 길이): Leaky Bucket queue형 — FIFO로 들어온 순서대로 눈금이 차고, 같은 순서로 빠진다 */
+.mem-q-1{ animation: mem-q-1 4s linear infinite; opacity:0; }
+.mem-q-2{ animation: mem-q-2 4s linear infinite; opacity:0; }
+.mem-q-3{ animation: mem-q-3 4s linear infinite; opacity:0; }
+@keyframes mem-q-1{ 0%,2%{opacity:0;} 4%{opacity:1;} 24%{opacity:1;} 26%{opacity:0;} 100%{opacity:0;} }
+@keyframes mem-q-2{ 0%,6%{opacity:0;} 8%{opacity:1;} 44%{opacity:1;} 46%{opacity:0;} 100%{opacity:0;} }
+@keyframes mem-q-3{ 0%,10%{opacity:0;} 12%{opacity:1;} 64%{opacity:1;} 66%{opacity:0;} 100%{opacity:0;} }
 
 /* ---- 1. Token Bucket: 토큰이 쌓이다가 버스트로 한꺼번에 빠짐 ---- */
 .tb-token{ animation: tb-rise 3s ease-in-out infinite; opacity:0; }
@@ -316,6 +339,12 @@ figcaption{ margin-top:0.9em;color:var(--muted);font-size:0.85em;text-align:cent
       <g class="tb-burst">
         <text class="rl-accent-label" x="100" y="16" text-anchor="middle">burst!</text>
       </g>
+      <rect class="rl-mem-track" x="10" y="102" width="4" height="4"/>
+      <rect class="rl-mem-track" x="16" y="102" width="4" height="4"/>
+      <rect class="rl-mem-track" x="22" y="102" width="4" height="4"/>
+      <rect class="rl-mem-track" x="28" y="102" width="4" height="4"/>
+      <rect class="rl-mem-track" x="34" y="102" width="4" height="4"/>
+      <rect class="rl-mem-fixed" x="10.7" y="102.7" width="2.6" height="2.6"/>
     </svg>
     <p class="rl-note">O(1) | 정확 | 버스트 허용(용량만큼)</p>
   </div>
@@ -336,6 +365,12 @@ figcaption{ margin-top:0.9em;color:var(--muted);font-size:0.85em;text-align:cent
         <circle class="tb-token rl-fill" cx="100" cy="26" r="6" stroke="var(--line)" stroke-width="1.2"/>
       </g>
       <text class="rl-label" x="100" y="16" text-anchor="middle">거울상(방향만 반대)</text>
+      <rect class="rl-mem-track" x="10" y="102" width="4" height="4"/>
+      <rect class="rl-mem-track" x="16" y="102" width="4" height="4"/>
+      <rect class="rl-mem-track" x="22" y="102" width="4" height="4"/>
+      <rect class="rl-mem-track" x="28" y="102" width="4" height="4"/>
+      <rect class="rl-mem-track" x="34" y="102" width="4" height="4"/>
+      <rect class="rl-mem-fixed" x="10.7" y="102.7" width="2.6" height="2.6"/>
     </svg>
     <p class="rl-note">O(1) | 정확 | 설정에 따름</p>
   </div>
@@ -355,6 +390,14 @@ figcaption{ margin-top:0.9em;color:var(--muted);font-size:0.85em;text-align:cent
       <circle class="lq-out rl-fill" cx="60" cy="66" r="5" stroke="var(--line)" stroke-width="1.2"/>
       <circle class="lq-out rl-fill" cx="76" cy="66" r="5" stroke="var(--line)" stroke-width="1.2"/>
       <circle class="lq-out rl-fill" cx="92" cy="66" r="5" stroke="var(--line)" stroke-width="1.2"/>
+      <rect class="rl-mem-track" x="10" y="102" width="4" height="4"/>
+      <rect class="rl-mem-track" x="16" y="102" width="4" height="4"/>
+      <rect class="rl-mem-track" x="22" y="102" width="4" height="4"/>
+      <rect class="rl-mem-track" x="28" y="102" width="4" height="4"/>
+      <rect class="rl-mem-track" x="34" y="102" width="4" height="4"/>
+      <rect class="rl-mem-fixed mem-q-1" x="10.7" y="102.7" width="2.6" height="2.6"/>
+      <rect class="rl-mem-fixed mem-q-2" x="16.7" y="102.7" width="2.6" height="2.6"/>
+      <rect class="rl-mem-fixed mem-q-3" x="22.7" y="102.7" width="2.6" height="2.6"/>
     </svg>
     <p class="rl-note">O(큐 길이) | 정확 | 흡수 후 평활화</p>
   </div>
@@ -373,6 +416,12 @@ figcaption{ margin-top:0.9em;color:var(--muted);font-size:0.85em;text-align:cent
       <circle class="fw-tick rl-ok" cx="105" cy="60" r="4"/>
       <circle class="fw-tick rl-ok" cx="112" cy="60" r="4"/>
       <text class="rl-accent-label" x="100" y="100" text-anchor="middle">경계 양옆이 동시에 허용됨</text>
+      <rect class="rl-mem-track" x="10" y="102" width="4" height="4"/>
+      <rect class="rl-mem-track" x="16" y="102" width="4" height="4"/>
+      <rect class="rl-mem-track" x="22" y="102" width="4" height="4"/>
+      <rect class="rl-mem-track" x="28" y="102" width="4" height="4"/>
+      <rect class="rl-mem-track" x="34" y="102" width="4" height="4"/>
+      <rect class="rl-mem-fixed" x="10.7" y="102.7" width="2.6" height="2.6"/>
     </svg>
     <p class="rl-note">O(1) | 경계에서 최대 2배 통과 | 경계 스파이크</p>
   </div>
@@ -392,6 +441,16 @@ figcaption{ margin-top:0.9em;color:var(--muted);font-size:0.85em;text-align:cent
       <circle class="sl-dot rl-warn" cx="135" cy="60" r="3.5"/>
       <circle class="sl-dot rl-warn" cx="160" cy="60" r="3.5"/>
       <text class="rl-label" x="100" y="20" text-anchor="middle">타임스탬프마다 기록 | O(n)</text>
+      <rect class="rl-mem-track" x="10" y="102" width="4" height="4"/>
+      <rect class="rl-mem-track" x="16" y="102" width="4" height="4"/>
+      <rect class="rl-mem-track" x="22" y="102" width="4" height="4"/>
+      <rect class="rl-mem-track" x="28" y="102" width="4" height="4"/>
+      <rect class="rl-mem-track" x="34" y="102" width="4" height="4"/>
+      <rect class="rl-mem-fixed mem-log-1" x="10.7" y="102.7" width="2.6" height="2.6"/>
+      <rect class="rl-mem-fixed mem-log-2" x="16.7" y="102.7" width="2.6" height="2.6"/>
+      <rect class="rl-mem-fixed mem-log-3" x="22.7" y="102.7" width="2.6" height="2.6"/>
+      <rect class="rl-mem-fixed mem-log-4" x="28.7" y="102.7" width="2.6" height="2.6"/>
+      <rect class="rl-mem-fixed mem-log-5" x="34.7" y="102.7" width="2.6" height="2.6"/>
     </svg>
     <p class="rl-note">O(n) | 정확 | 정확히 차단</p>
   </div>
@@ -409,6 +468,12 @@ figcaption{ margin-top:0.9em;color:var(--muted);font-size:0.85em;text-align:cent
         <rect class="rl-fill" x="60" y="30" width="40" height="60" stroke="none"/>
       </g>
       <text class="rl-accent-label" x="100" y="100" text-anchor="middle">가중치가 매끄럽게 이동</text>
+      <rect class="rl-mem-track" x="10" y="102" width="4" height="4"/>
+      <rect class="rl-mem-track" x="16" y="102" width="4" height="4"/>
+      <rect class="rl-mem-track" x="22" y="102" width="4" height="4"/>
+      <rect class="rl-mem-track" x="28" y="102" width="4" height="4"/>
+      <rect class="rl-mem-track" x="34" y="102" width="4" height="4"/>
+      <rect class="rl-mem-fixed" x="10.7" y="102.7" width="2.6" height="2.6"/>
     </svg>
     <p class="rl-note">O(1) | 근사(0.003% 오차 실측) | 평활화</p>
   </div>
