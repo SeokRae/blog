@@ -194,6 +194,230 @@ stopwatch.sleepMicrosUninterruptibly(microsToWait);
 | Sliding Window Log | 요청마다 타임스탬프 | O(n) | 정확 | 정확히 차단 |
 | Sliding Window Counter | 카운터 2개 또는 60개 | O(1) | 근사 | 평활화 |
 
+<figure class="rl-algo-embed">
+<style>
+.rl-algo-embed{
+  margin:2em 0;padding:1.25em;border:1px solid rgba(31,111,208,0.18);border-radius:10px;background:#fbfcfe;
+  --muted:#54667e;--accent:#1f6fd0;--surface:#ffffff;--border:rgba(28,60,110,0.16);--text:#1b2635;
+  --line:rgba(31,111,208,0.55);--fill:rgba(31,111,208,0.16);--warn:#b5460a;--ok:#1a7a4c;
+  --font:-apple-system,"Apple SD Gothic Neo","Noto Sans KR","Segoe UI",sans-serif;
+  --mono:ui-monospace,"JetBrains Mono",Menlo,monospace;
+}
+[data-theme="dark"] .rl-algo-embed{
+  background:#0c1524;border-color:rgba(153,186,255,0.14);
+  --muted:#98abc9;--accent:#68b6ff;--surface:#16233b;--border:rgba(153,186,255,0.14);--text:#edf3ff;
+  --line:rgba(104,182,255,0.75);--fill:rgba(104,182,255,0.16);--warn:#ff9a5c;--ok:#5cd696;
+}
+.rl-algo-embed .rl-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:2.6em 1em;
+}
+@media (max-width: 640px){
+  .rl-algo-embed .rl-grid{ grid-template-columns:repeat(2,1fr); gap:2.2em 0.8em; }
+}
+@media (max-width: 420px){
+  .rl-algo-embed .rl-grid{ grid-template-columns:1fr; }
+}
+.rl-algo-embed .rl-panel{ text-align:center; }
+.rl-algo-embed .rl-title{ font-family:var(--font); font-size:0.92em; font-weight:700; color:var(--text); margin:0 0 0.4em; }
+.rl-algo-embed .rl-svg{ width:100%; height:auto; display:block; }
+.rl-algo-embed .rl-note{ font-family:var(--font); font-size:0.78em; color:var(--muted); margin:0.4em 0 0; }
+.rl-algo-embed text{ font-family:var(--mono); }
+.rl-algo-embed .rl-axis{ stroke:var(--border); stroke-width:1.2; }
+.rl-algo-embed .rl-outline{ fill:none; stroke:var(--line); stroke-width:1.8; }
+.rl-algo-embed .rl-dash{ fill:none; stroke:var(--muted); stroke-width:1; stroke-dasharray:3,3; }
+.rl-algo-embed .rl-fill{ fill:var(--fill); }
+.rl-algo-embed .rl-label{ fill:var(--muted); font-size:8.5px; }
+.rl-algo-embed .rl-accent-label{ fill:var(--accent); font-size:8.5px; font-weight:700; }
+.rl-algo-embed .rl-ok{ fill:var(--ok); }
+.rl-algo-embed .rl-warn{ fill:var(--warn); }
+figcaption{ margin-top:0.9em;color:var(--muted);font-size:0.85em;text-align:center; font-family: -apple-system, sans-serif;}
+
+/* ---- 1. Token Bucket: 토큰이 쌓이다가 버스트로 한꺼번에 빠짐 ---- */
+.tb-token{ animation: tb-rise 3s ease-in-out infinite; opacity:0; }
+.tb-token:nth-child(1){ animation-delay: 0s; }
+.tb-token:nth-child(2){ animation-delay: .45s; }
+.tb-token:nth-child(3){ animation-delay: .9s; }
+.tb-token:nth-child(4){ animation-delay: 1.35s; }
+.tb-token:nth-child(5){ animation-delay: 1.8s; }
+@keyframes tb-rise{
+  0%{ opacity:0; transform: translateY(-10px); }
+  8%{ opacity:1; transform: translateY(0); }
+  78%{ opacity:1; transform: translateY(0); }
+  86%{ opacity:0; transform: translateY(18px); }
+  100%{ opacity:0; transform: translateY(18px); }
+}
+.tb-burst{ animation: tb-flash 3s ease-in-out infinite; opacity:0; }
+@keyframes tb-flash{
+  0%,74%{ opacity:0; }
+  80%{ opacity:1; }
+  92%{ opacity:0; }
+  100%{ opacity:0; }
+}
+
+/* ---- 2. Leaky Bucket meter형: Token Bucket의 거울상 ---- */
+.lb-mirror{ transform: scaleX(-1); transform-origin: center; }
+
+/* ---- 3. Leaky Bucket queue형: 버스티하게 들어와 균등하게 빠짐 ---- */
+.lq-in{ animation-timing-function: ease-in; animation-iteration-count: infinite; opacity:0; }
+.lq-in:nth-child(1){ animation-name: lq-drop1; animation-duration:4s; }
+.lq-in:nth-child(2){ animation-name: lq-drop2; animation-duration:4s; }
+.lq-in:nth-child(3){ animation-name: lq-drop3; animation-duration:4s; }
+@keyframes lq-drop1{ 0%{opacity:0;transform:translateY(-8px);} 3%{opacity:1;transform:translateY(0);} 20%{opacity:1;transform:translateY(0);} 24%{opacity:0;} 100%{opacity:0;} }
+@keyframes lq-drop2{ 0%,4%{opacity:0;transform:translateY(-8px);} 7%{opacity:1;transform:translateY(0);} 20%{opacity:1;transform:translateY(0);} 24%{opacity:0;} 100%{opacity:0;} }
+@keyframes lq-drop3{ 0%,8%{opacity:0;transform:translateY(-8px);} 11%{opacity:1;transform:translateY(0);} 20%{opacity:1;transform:translateY(0);} 24%{opacity:0;} 100%{opacity:0;} }
+.lq-out{ animation: lq-leak 4s linear infinite; opacity:0; }
+.lq-out:nth-child(4){ animation-delay:0s; }
+.lq-out:nth-child(5){ animation-delay:1.33s; }
+.lq-out:nth-child(6){ animation-delay:2.66s; }
+@keyframes lq-leak{
+  0%{ opacity:0; transform: translateY(0); }
+  4%{ opacity:1; }
+  30%{ opacity:1; transform: translateY(22px); }
+  36%{ opacity:0; transform: translateY(26px); }
+  100%{ opacity:0; }
+}
+
+/* ---- 4. Fixed Window Counter: 경계에서 카운터 리셋 + 더블 버스트 ---- */
+.fw-boundary-flash{ animation: fw-flash 4s ease-in-out infinite; opacity:0; }
+@keyframes fw-flash{ 0%,20%{opacity:0;} 45%{opacity:0.35;} 70%{opacity:0;} 100%{opacity:0;} }
+.fw-tick{ animation: fw-tick-in 4s ease-in-out infinite; opacity:0; }
+@keyframes fw-tick-in{ 0%,15%{opacity:0;} 30%{opacity:1;} 68%{opacity:1;} 78%{opacity:0;} 100%{opacity:0;} }
+
+/* ---- 5. Sliding Window Log: 창이 부드럽게 이동, 지난 점은 흐려짐 ---- */
+.sl-window{ animation: sl-slide 5s linear infinite; }
+@keyframes sl-slide{ 0%{ transform: translateX(0); } 100%{ transform: translateX(150px); } }
+.sl-dot{ }
+
+/* ---- 6. Sliding Window Counter: 두 구간 가중 블렌드가 부드럽게 이동 ---- */
+.sc-blend{ animation: sc-slide 4s linear infinite; }
+@keyframes sc-slide{ 0%{ transform: translateX(0); } 100%{ transform: translateX(80px); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .rl-algo-embed *{ animation: none !important; opacity: 1 !important; transform: none !important; }
+}
+</style>
+
+<div class="rl-grid">
+
+  <!-- 1. Token Bucket -->
+  <div class="rl-panel">
+    <h4 class="rl-title">Token Bucket</h4>
+    <svg class="rl-svg" viewBox="0 0 200 110" role="img" aria-label="토큰 버킷: 토큰이 용량까지 쌓였다가 버스트로 한꺼번에 빠져나간다">
+      <line class="rl-axis" x1="10" y1="95" x2="190" y2="95"/>
+      <path class="rl-outline" d="M70,20 L70,90 Q70,96 76,96 L124,96 Q130,96 130,90 L130,20" />
+      <line class="rl-dash" x1="64" y1="22" x2="136" y2="22"/>
+      <text class="rl-label" x="138" y="25">capacity</text>
+      <path class="rl-outline" d="M130,55 L144,50 L144,60 Z" stroke-linejoin="round"/>
+      <circle class="tb-token rl-fill" cx="100" cy="80" r="6" stroke="var(--line)" stroke-width="1.2"/>
+      <circle class="tb-token rl-fill" cx="100" cy="66" r="6" stroke="var(--line)" stroke-width="1.2"/>
+      <circle class="tb-token rl-fill" cx="100" cy="52" r="6" stroke="var(--line)" stroke-width="1.2"/>
+      <circle class="tb-token rl-fill" cx="100" cy="38" r="6" stroke="var(--line)" stroke-width="1.2"/>
+      <circle class="tb-token rl-fill" cx="100" cy="26" r="6" stroke="var(--line)" stroke-width="1.2"/>
+      <g class="tb-burst">
+        <text class="rl-accent-label" x="100" y="16" text-anchor="middle">burst!</text>
+      </g>
+    </svg>
+    <p class="rl-note">O(1) | 정확 | 버스트 허용(용량만큼)</p>
+  </div>
+
+  <!-- 2. Leaky Bucket meter형 -->
+  <div class="rl-panel">
+    <h4 class="rl-title">Leaky Bucket (meter형)</h4>
+    <svg class="rl-svg" viewBox="0 0 200 110" role="img" aria-label="미터형 리키 버킷: Token Bucket의 거울상과 동일하게 동작한다">
+      <g class="lb-mirror">
+        <line class="rl-axis" x1="10" y1="95" x2="190" y2="95"/>
+        <path class="rl-outline" d="M70,20 L70,90 Q70,96 76,96 L124,96 Q130,96 130,90 L130,20" />
+        <line class="rl-dash" x1="64" y1="22" x2="136" y2="22"/>
+        <path class="rl-outline" d="M130,55 L144,50 L144,60 Z" stroke-linejoin="round"/>
+        <circle class="tb-token rl-fill" cx="100" cy="80" r="6" stroke="var(--line)" stroke-width="1.2"/>
+        <circle class="tb-token rl-fill" cx="100" cy="66" r="6" stroke="var(--line)" stroke-width="1.2"/>
+        <circle class="tb-token rl-fill" cx="100" cy="52" r="6" stroke="var(--line)" stroke-width="1.2"/>
+        <circle class="tb-token rl-fill" cx="100" cy="38" r="6" stroke="var(--line)" stroke-width="1.2"/>
+        <circle class="tb-token rl-fill" cx="100" cy="26" r="6" stroke="var(--line)" stroke-width="1.2"/>
+      </g>
+      <text class="rl-label" x="100" y="16" text-anchor="middle">거울상(방향만 반대)</text>
+    </svg>
+    <p class="rl-note">O(1) | 정확 | 설정에 따름</p>
+  </div>
+
+  <!-- 3. Leaky Bucket queue형 -->
+  <div class="rl-panel">
+    <h4 class="rl-title">Leaky Bucket (queue형)</h4>
+    <svg class="rl-svg" viewBox="0 0 200 110" role="img" aria-label="큐형 리키 버킷: 버스티하게 들어와도 균등한 속도로 빠져나간다">
+      <text class="rl-label" x="46" y="14" text-anchor="middle">in</text>
+      <circle class="lq-in rl-fill" cx="46" cy="24" r="5" stroke="var(--line)" stroke-width="1.2"/>
+      <circle class="lq-in rl-fill" cx="66" cy="24" r="5" stroke="var(--line)" stroke-width="1.2"/>
+      <circle class="lq-in rl-fill" cx="86" cy="24" r="5" stroke="var(--line)" stroke-width="1.2"/>
+      <path class="rl-outline" d="M40,34 L40,64 L112,64 L112,34" />
+      <text class="rl-label" x="76" y="50" text-anchor="middle">queue</text>
+      <line class="rl-axis" x1="10" y1="95" x2="190" y2="95"/>
+      <text class="rl-label" x="76" y="80" text-anchor="middle">out (일정 속도)</text>
+      <circle class="lq-out rl-fill" cx="60" cy="66" r="5" stroke="var(--line)" stroke-width="1.2"/>
+      <circle class="lq-out rl-fill" cx="76" cy="66" r="5" stroke="var(--line)" stroke-width="1.2"/>
+      <circle class="lq-out rl-fill" cx="92" cy="66" r="5" stroke="var(--line)" stroke-width="1.2"/>
+    </svg>
+    <p class="rl-note">O(큐 길이) | 정확 | 흡수 후 평활화</p>
+  </div>
+
+  <!-- 4. Fixed Window Counter -->
+  <div class="rl-panel">
+    <h4 class="rl-title">Fixed Window Counter</h4>
+    <svg class="rl-svg" viewBox="0 0 200 110" role="img" aria-label="고정 윈도우: 경계에서 카운터가 리셋되며 더블 버스트가 발생할 수 있다">
+      <line class="rl-axis" x1="10" y1="60" x2="190" y2="60"/>
+      <line class="rl-dash" x1="100" y1="20" x2="100" y2="90"/>
+      <rect class="fw-boundary-flash rl-warn" x="95" y="20" width="10" height="70"/>
+      <text class="rl-label" x="55" y="18" text-anchor="middle">window N</text>
+      <text class="rl-label" x="145" y="18" text-anchor="middle">window N+1</text>
+      <circle class="fw-tick rl-warn" cx="88" cy="60" r="4"/>
+      <circle class="fw-tick rl-warn" cx="95" cy="60" r="4"/>
+      <circle class="fw-tick rl-ok" cx="105" cy="60" r="4"/>
+      <circle class="fw-tick rl-ok" cx="112" cy="60" r="4"/>
+      <text class="rl-accent-label" x="100" y="100" text-anchor="middle">경계 양옆이 동시에 허용됨</text>
+    </svg>
+    <p class="rl-note">O(1) | 경계에서 최대 2배 통과 | 경계 스파이크</p>
+  </div>
+
+  <!-- 5. Sliding Window Log -->
+  <div class="rl-panel">
+    <h4 class="rl-title">Sliding Window Log</h4>
+    <svg class="rl-svg" viewBox="0 0 200 110" role="img" aria-label="슬라이딩 윈도우 로그: 창이 부드럽게 이동하며 지난 요청은 만료된다">
+      <line class="rl-axis" x1="10" y1="60" x2="190" y2="60"/>
+      <g class="sl-window">
+        <rect class="rl-fill" x="20" y="30" width="40" height="60" stroke="var(--line)" stroke-width="1.4"/>
+      </g>
+      <circle class="sl-dot rl-warn" cx="25" cy="60" r="3.5"/>
+      <circle class="sl-dot rl-warn" cx="45" cy="60" r="3.5"/>
+      <circle class="sl-dot rl-warn" cx="75" cy="60" r="3.5"/>
+      <circle class="sl-dot rl-warn" cx="105" cy="60" r="3.5"/>
+      <circle class="sl-dot rl-warn" cx="135" cy="60" r="3.5"/>
+      <circle class="sl-dot rl-warn" cx="160" cy="60" r="3.5"/>
+      <text class="rl-label" x="100" y="20" text-anchor="middle">타임스탬프마다 기록 | O(n)</text>
+    </svg>
+    <p class="rl-note">O(n) | 정확 | 정확히 차단</p>
+  </div>
+
+  <!-- 6. Sliding Window Counter -->
+  <div class="rl-panel">
+    <h4 class="rl-title">Sliding Window Counter</h4>
+    <svg class="rl-svg" viewBox="0 0 200 110" role="img" aria-label="슬라이딩 윈도우 카운터: 두 구간의 가중 평균이 부드럽게 이동한다">
+      <line class="rl-axis" x1="10" y1="60" x2="190" y2="60"/>
+      <rect class="rl-outline" x="20" y="30" width="80" height="60" fill="none"/>
+      <rect class="rl-outline" x="100" y="30" width="80" height="60" fill="none"/>
+      <text class="rl-label" x="60" y="26" text-anchor="middle">prev</text>
+      <text class="rl-label" x="140" y="26" text-anchor="middle">current</text>
+      <g class="sc-blend">
+        <rect class="rl-fill" x="60" y="30" width="40" height="60" stroke="none"/>
+      </g>
+      <text class="rl-accent-label" x="100" y="100" text-anchor="middle">가중치가 매끄럽게 이동</text>
+    </svg>
+    <p class="rl-note">O(1) | 근사(0.003% 오차 실측) | 평활화</p>
+  </div>
+
+</div>
+<figcaption>레이트 리미팅 알고리즘 6종의 반복 루프 애니메이션. 각 패널의 시각 언어가 "버스트를 얼마나, 어떻게 허용하는가"를 보여준다</figcaption>
+</figure>
+
+
 이 표에서 실무적으로 판단이 갈리는 지점만 짚습니다.
 
 **Fixed Window의 경계 문제는 구체적입니다.** Figma가 계산까지 붙은 예를 남겼어요. 분당 5건 한도에서 "사용자가 11:00:59에 5건을 보냈다면, 매 분 시작마다 새 카운터가 시작되므로 11:01:00에 5건을 더 보낼 수 있다"고요. 그래서 "때때로 허용 건수의 두 배를 통과시킬 수 있다"고 씁니다.[^figma] 다만 Cloudflare는 같은 문제를 인정하면서도 "순진한 Fixed Window 알고리즘도 사실 그렇게 나쁘지 않다"고 쓰기도 했어요.[^cloudflare] 나쁜 알고리즘이라기보다, **경계 스파이크를 감당할 수 있는 자리인지**가 판단 기준입니다.

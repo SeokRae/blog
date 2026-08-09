@@ -32,6 +32,7 @@ class SiteOutputTest < Minitest::Test
       post = File.read(File.join(destination, "2026", "01", "20", "escaping-fixture.html"))
       css = File.read(File.join(destination, "assets", "css", "main.css"))
       flowcast_post = File.read(File.join(destination, "2026", "07", "15", "flowcast-1-why-visual-docs.html"))
+      rate_limiter_post = File.read(File.join(destination, "2026", "08", "09", "rate-limiter-payment-platform.html"))
 
       assert_match(/<html[^>]+lang="ko"/, index)
       assert_match(%r{<link rel="canonical" href="https://seokrae\.github\.io/blog/">}, index)
@@ -87,6 +88,20 @@ class SiteOutputTest < Minitest::Test
       # [data-theme="dark"] .flowcast-embed가 팔레트 변수를 다크로 오버라이드해야 한다. (#40)
       assert_match(/\[data-theme=("?)dark\1\]\s*\.flowcast-embed\s*\{/, flowcast_post,
         "다크 모드에서 flowcast 다이어그램 팔레트를 오버라이드하는 규칙이 있어야 한다")
+      # 레이트리미터 포스트의 알고리즘 6종 비교를 반복 루프 CSS 애니메이션으로 보여주는
+      # 인라인 SVG 임베드. flowcast-embed와 같은 패턴(CSS 변수 + 다크 모드 오버라이드,
+      # 외부 요청 0)을 따른다. (#82)
+      assert_includes rate_limiter_post, 'class="rl-algo-embed"', "알고리즘 애니메이션 임베드가 있어야 한다"
+      assert_equal 6, rate_limiter_post.scan(/class="rl-svg"/).length,
+        "알고리즘 6종 패널이 모두 있어야 한다"
+      assert_match(/\[data-theme=("?)dark\1\]\s*\.rl-algo-embed\s*\{/, rate_limiter_post,
+        "다크 모드에서 알고리즘 애니메이션 팔레트를 오버라이드하는 규칙이 있어야 한다")
+      assert_match(/@media \(prefers-reduced-motion: ?reduce\)/, rate_limiter_post,
+        "모션 최소화 설정을 존중하는 규칙이 있어야 한다")
+      refute_match(%r{<link[^>]*rel="stylesheet"[^>]*href="https?://}, rate_limiter_post,
+        "알고리즘 애니메이션이 외부 스타일시트를 끌어오면 안 된다")
+      refute_match(%r{<script[^>]*\ssrc="https?://}, rate_limiter_post,
+        "알고리즘 애니메이션이 외부 스크립트를 끌어오면 안 된다")
       # 각주 목록이 list-style-position: inside 기본값이라 번호가 본문과 분리된 한 줄로
       # 떨어졌다. outside로 바꾸고 구분선·인덴트·문단 여백을 정리한다. (#42)
       assert_match(/\.footnotes\{margin-top:3em;padding-top:1\.5em;border-top:1px solid rgba\(0,0,0,0\.12\)\}/, css,
