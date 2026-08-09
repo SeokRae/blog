@@ -2,7 +2,7 @@
 layout: post
 date: 2026-08-09
 title: "같은 30 TPS인데, 버스트는 30배가 됐다"
-subtitle: "결제 플랫폼에 레이트리미터를 넣으며 배운 것"
+subtitle: "결제 플랫폼에 Rate Limiter를 넣으며 배운 것"
 tags: [레이트리미팅, 결제, 아키텍처, Java]
 ---
 
@@ -10,15 +10,15 @@ tags: [레이트리미팅, 결제, 아키텍처, Java]
 
 읽으면 호환성 이슈로 보인다. 실제로 그게 맞다. 그런데 이 한 줄이 바꾼 건 라이브러리만이 아니었어요. 2주 전에 "버스트를 원천 차단한다"고 못 박아 뒀던 정책이, 이 커밋과 함께 "최대 1초치 버스트 허용"으로 뒤집혔습니다. 커밋 본문은 비어 있었습니다. 의도를 적어 둔 javadoc은 diff에서 통째로 사라졌고, 대체 설명도 붙지 않았어요.
 
-레이트리미터를 알고리즘 비교표로 배웠다면 절대 못 봤을 사고입니다. 표에는 "Token Bucket: 버스트 허용"이라고만 적혀 있으니까요. 얼마나 허용하는지는 어디에도 없습니다.
+Rate Limiter를 알고리즘 비교표로 배웠다면 절대 못 봤을 사고입니다. 표에는 "Token Bucket: 버스트 허용"이라고만 적혀 있으니까요. 얼마나 허용하는지는 어디에도 없습니다.
 
 그런데 이 사고의 진짜 문제는 버스트를 막느냐 허용하느냐가 아니었습니다. 그 값이 1이든 30이든, 누군가는 그 숫자를 의식적으로 쥐고 있어야 했어요. 문제는 그 통제권이 어느 순간 조용히 아무에게도 없는 상태가 됐다는 겁니다.
 
-이 글은 결제 플랫폼을 만들면서 레이트리미터라는 개념이 어떻게 도착했고, 구현 과정에서 제가 뭘 잘못 알고 있었는지를 남기는 기록입니다.
+이 글은 결제 플랫폼을 만들면서 Rate Limiter라는 개념이 어떻게 도착했고, 구현 과정에서 제가 뭘 잘못 알고 있었는지를 남기는 기록입니다.
 
 ## 개념은 필요해서가 아니라, 답할 수 없어서 도착했다
 
-레이트리미터를 성능 문제로 발견한 게 아닙니다. 해외 결제 파트너가 보낸 기술 질의서 10문항을 받고 나서 발견했어요.
+Rate Limiter를 성능 문제로 발견한 게 아닙니다. 해외 결제 파트너가 보낸 기술 질의서 10문항을 받고 나서 발견했어요.
 
 질문은 이런 것들이었습니다. 카테고리별 한도는 얼마인가. 한도는 무슨 단위로 적용되는가(API 키인가, 계정인가, IP인가). 라이브와 테스트 모드는 다른가. 초과하면 어떤 상태 코드로 응답하고 `Retry-After`를 주는가. 결제 라이프사이클 단계별로 처리량이 다른가. 부하 테스트를 해도 되는가. 한도를 공개하는가. 임시 증량이 가능한가, 리드타임은 얼마인가.
 
@@ -51,7 +51,7 @@ tags: [레이트리미팅, 결제, 아키텍처, Java]
 
 실제로 우리가 파트너 한도를 알아낸 경로도 문서가 아니었습니다. 429를 맞아 보고 알았어요. 답변서에 적힌 근거는 "초과 요청 시 429 응답 확인"이었고, 상태는 "협의 중"이었습니다.
 
-**2. 인프라 탄력성이 낮으면 레이트리미터가 유일한 손잡이다.**
+**2. 인프라 탄력성이 낮으면 Rate Limiter가 유일한 손잡이다.**
 
 정책 문서에 스케일링 소요 시간 표가 있습니다.
 
@@ -62,13 +62,13 @@ tags: [레이트리미팅, 결제, 아키텍처, Java]
 | 서버 VM 스케일업 | 1~2 영업일 |
 | 신규 VM 추가(스케일아웃) | 3~5 영업일 |
 
-온프레미스(IDC) 환경에서 신규 서버 추가는 ITSM 다단계 프로세스를 타야 합니다. 클라우드였으면 오토스케일이 소리 없이 흡수했을 스파이크를, 여기서는 레이트리미터가 받아내야 해요. **인프라 탄력성이 낮을수록 레이트리미터의 정책적 중요도가 올라갑니다.** 결제 시스템이 유독 온프레미스가 많다는 점과 정확히 겹치는 지점이었어요.
+온프레미스(IDC) 환경에서 신규 서버 추가는 ITSM 다단계 프로세스를 타야 합니다. 클라우드였으면 오토스케일이 소리 없이 흡수했을 스파이크를, 여기서는 Rate Limiter가 받아내야 해요. **인프라 탄력성이 낮을수록 Rate Limiter의 정책적 중요도가 올라갑니다.** 결제 시스템이 유독 온프레미스가 많다는 점과 정확히 겹치는 지점이었어요.
 
 **3. 재시도 증폭이 결제에서 특히 비싸다.**
 
 이전 글에서 커넥션 풀 고갈과 재시도 폭풍을 다룬 적이 있는데,[^prev-post] AWS Builders' Library가 그 메커니즘을 정확히 서술합니다. 클라이언트가 재시도하면 시스템에 걸리는 부하가 배수로 늡니다. 호출 그래프가 깊고 각 계층이 재시도를 하면 최하위 계층의 과부하는 지수적으로 증폭되고요. 그래서 "과부하가 스스로 피드백 루프를 만들어 정상 상태가 된다"고 씁니다.[^aws-shedding]
 
-레이트 리미팅은 그 장애의 **앞단**입니다. 재시도 폭풍이 터진 뒤에 서킷 브레이커로 끊는 게 아니라, 애초에 폭풍이 생길 유량을 만들지 않는 쪽이에요.
+레이트 리미팅은 그 장애의 **앞단**입니다. 재시도 폭풍이 터진 뒤에 Circuit Breaker로 끊는 게 아니라, 애초에 폭풍이 생길 유량을 만들지 않는 쪽이에요.
 
 ### 규제 때문은 아니었다
 
@@ -102,7 +102,7 @@ FDS의 실제 근거도 법령이 아니라 2023년 금융감독원과 금융보
 
 ## 버스트를 0으로 만들려던 첫 구현
 
-아웃바운드 레이트리미터의 최초 구현은 bucket4j였습니다. 설정은 이랬어요. 시크릿 키별로 독립 버킷을 두고, **버킷 용량 1**에 33밀리초마다 토큰 1개를 충전. 초당 30건이 됩니다.
+아웃바운드 Rate Limiter의 최초 구현은 bucket4j였습니다. 설정은 이랬어요. 시크릿 키별로 독립 버킷을 두고, **버킷 용량 1**에 33밀리초마다 토큰 1개를 충전. 초당 30건이 됩니다.
 
 여기서 Token Bucket을 최소한만 짚고 갑시다. 이 알고리즘의 스펙은 숫자 하나가 아니라 **두 개**입니다.
 
@@ -177,7 +177,7 @@ stopwatch.sleepMicrosUninterruptibly(microsToWait);
 
 그러니까 컴파일 에러가 사라진 이유는 "예외가 안 나서"가 아니라 **"인터럽트를 받는 기능 자체가 없어서"**입니다. 대기 중인 스레드를 더 이상 깨울 수 없어요. 애플리케이션 종료나 요청 취소 시점에 회수가 안 됩니다.
 
-같은 코드베이스가 HTTP 커넥션 풀에는 "풀 고갈 시 무한 대기 대신 빠른 실패"를 적용해 놨는데(커넥션 요청 타임아웃 5초), 레이트리미터에는 상한 없는 블로킹이 남았습니다. 방어의 일관성이 깨진 지점이에요.
+같은 코드베이스가 HTTP 커넥션 풀에는 "풀 고갈 시 무한 대기 대신 빠른 실패"를 적용해 놨는데(커넥션 요청 타임아웃 5초), Rate Limiter에는 상한 없는 블로킹이 남았습니다. 방어의 일관성이 깨진 지점이에요.
 
 덧붙이면 Guava의 `RateLimiter`에는 `@Beta` 애노테이션이 붙어 있습니다. Guava에서 `@Beta`는 API 호환성을 보장하지 않는다는 표시예요. 프로덕션 결제 경로의 유량 제어를 `@Beta` 클래스에 맡기고 있다는 사실도 그때는 몰랐습니다.
 
@@ -196,13 +196,13 @@ stopwatch.sleepMicrosUninterruptibly(microsToWait);
 
 이 표에서 실무적으로 판단이 갈리는 지점만 짚습니다.
 
-**고정 윈도우의 경계 문제는 구체적입니다.** Figma가 계산까지 붙은 예를 남겼어요. 분당 5건 한도에서 "사용자가 11:00:59에 5건을 보냈다면, 매 분 시작마다 새 카운터가 시작되므로 11:01:00에 5건을 더 보낼 수 있다"고요. 그래서 "때때로 허용 건수의 두 배를 통과시킬 수 있다"고 씁니다.[^figma] 다만 Cloudflare는 같은 문제를 인정하면서도 "순진한 고정 윈도우 알고리즘도 사실 그렇게 나쁘지 않다"고 쓰기도 했어요.[^cloudflare] 나쁜 알고리즘이라기보다, **경계 스파이크를 감당할 수 있는 자리인지**가 판단 기준입니다.
+**Fixed Window의 경계 문제는 구체적입니다.** Figma가 계산까지 붙은 예를 남겼어요. 분당 5건 한도에서 "사용자가 11:00:59에 5건을 보냈다면, 매 분 시작마다 새 카운터가 시작되므로 11:01:00에 5건을 더 보낼 수 있다"고요. 그래서 "때때로 허용 건수의 두 배를 통과시킬 수 있다"고 씁니다.[^figma] 다만 Cloudflare는 같은 문제를 인정하면서도 "순진한 Fixed Window 알고리즘도 사실 그렇게 나쁘지 않다"고 쓰기도 했어요.[^cloudflare] 나쁜 알고리즘이라기보다, **경계 스파이크를 감당할 수 있는 자리인지**가 판단 기준입니다.
 
-**슬라이딩 윈도우 로그는 정확한데 비쌉니다.** Figma의 계산: 사용자 1만 명이 각각 500건을 보내면 타임스탬프당 4바이트만 잡아도 약 20MB입니다. 요청마다 값을 저장하니까요.
+**Sliding Window Log는 정확한데 비쌉니다.** Figma의 계산: 사용자 1만 명이 각각 500건을 보내면 타임스탬프당 4바이트만 잡아도 약 20MB입니다. 요청마다 값을 저장하니까요.[^figma]
 
-**슬라이딩 윈도우 카운터는 근사인데, 그 오차가 실측돼 있습니다.** Cloudflare가 27만 개 출처에서 온 4억 요청을 분석해서 "0.003%의 요청이 잘못 허용되거나 잘못 제한됐다"고 발표했어요. 상태량은 "카운터당 숫자 두 개"뿐입니다.[^cloudflare]
+**Sliding Window Counter는 근사인데, 그 오차가 실측돼 있습니다.** Cloudflare가 27만 개 출처에서 온 4억 요청을 분석해서 "0.003%의 요청이 잘못 허용되거나 잘못 제한됐다"고 발표했어요. 상태량은 "카운터당 숫자 두 개"뿐입니다.[^cloudflare]
 
-그런데 여기서 이름의 함정이 또 나옵니다. **같은 "슬라이딩 윈도우 카운터"인데 Figma의 구현은 다릅니다.** Figma는 카운터 2개가 아니라 윈도우를 60등분한 서브윈도우 60개를 Redis 해시에 담아요. 메모리는 약 2.4MB로 로그 방식의 1/8 수준이고요. 오차는 의도적으로 **한쪽 방향으로 몰았습니다.** "약간 관대한 대신 조금 더 엄격한 쪽"을 택했다고 씁니다.[^figma] Cloudflare의 오차는 양방향인데 Figma의 오차는 한 방향이에요. 같은 이름, 다른 계약입니다.
+그런데 여기서 이름의 함정이 또 나옵니다. **같은 "Sliding Window Counter"인데 Figma의 구현은 다릅니다.** Figma는 카운터 2개가 아니라 윈도우를 60등분한 서브윈도우 60개를 Redis 해시에 담아요. 메모리는 약 2.4MB로 로그 방식의 1/8 수준이고요. 오차는 의도적으로 **한쪽 방향으로 몰았습니다.** "약간 관대한 대신 조금 더 엄격한 쪽"을 택했다고 씁니다.[^figma] Cloudflare의 오차는 양방향인데 Figma의 오차는 한 방향이에요. 같은 이름, 다른 계약입니다.
 
 **그리고 Leaky Bucket은 아예 두 개입니다.** 위키백과가 이 혼동을 직접 서술해요. 문헌에 이 비유를 적용하는 서로 다른 두 방법이 있고, 둘 다 leaky bucket 알고리즘이라 불리며, 대개 서로를 언급하지 않은 채로 쓰인다고. 그래서 "leaky bucket 알고리즘이 무엇이고 어떤 속성을 갖는지에 대한 혼동을 낳았다"고 적혀 있습니다. 게다가 계량기(meter)형 leaky bucket은 **Token Bucket의 거울상으로 정확히 등가**라고 명시합니다.[^leaky]
 
@@ -240,7 +240,7 @@ stopwatch.sleepMicrosUninterruptibly(microsToWait);
 
 아웃바운드 인터셉터의 적용 조건은 딱 한 줄이었습니다. 요청 URL의 호스트가 특정 파트너 도메인으로 끝나는지 확인하고, 맞으면 리미터를 통과시키는 식이에요.
 
-문제는 **같은 `RestTemplate`을 다른 파트너 호출도 공유**한다는 겁니다. 인터셉터 체인은 로깅, 서킷 브레이커, 레이트리미터 순인데, 호스트 조건이 걸린 건 레이트리미터뿐이에요. 그래서 다른 파트너로 나가는 호출은 이 보호를 전혀 받지 않습니다.
+문제는 **같은 `RestTemplate`을 다른 파트너 호출도 공유**한다는 겁니다. 인터셉터 체인은 로깅, Circuit Breaker, Rate Limiter 순인데, 호스트 조건이 걸린 건 Rate Limiter뿐이에요. 그래서 다른 파트너로 나가는 호출은 이 보호를 전혀 받지 않습니다.
 
 사내 위험 카탈로그 문서는 이 한계를 스스로 적어 뒀습니다. 현재 상태 스냅샷 표에도 대량 export 기능의 "호출 간 페이싱" 칸이 "없음"이었고요. 정작 한 번에 수십 건을 순차 발사하는 경로에는 리미터가 안 걸려 있었던 거예요.
 
@@ -261,15 +261,15 @@ stopwatch.sleepMicrosUninterruptibly(microsToWait);
 
 **키 카디널리티(무한 증가하면 TTL과 상한이 필요하다)와 키 민감도(시크릿이면 해싱이 필요하다)는 알고리즘 선택과 완전히 독립적인 설계 축이었습니다.** 어떤 알고리즘 비교표에도 이 열은 없어요.
 
-## 레이트리미터가 하지 않는 일
+## Rate Limiter가 하지 않는 일
 
 리서치하면서 제가 갖고 있던 오해 하나가 깨졌습니다.
 
 ### 중복 결제를 막지 않는다
 
-"레이트리미터를 걸면 더블클릭 중복 결제도 막히는 것 아닌가"라고 생각했는데, 아닙니다. **레이트리미터는 멱등성 계층보다 앞에서 돌아갑니다.**
+"Rate Limiter를 걸면 더블클릭 중복 결제도 막히는 것 아닌가"라고 생각했는데, 아닙니다. **Rate Limiter는 멱등성 계층보다 앞에서 돌아갑니다.**
 
-Stripe의 저수준 에러 문서에 이 순서가 명시돼 있어요. 429로 제한된 요청은 같은 멱등키를 써도 다른 결과를 낼 수 있는데, 레이트리미터가 API의 멱등성 계층보다 먼저 실행되기 때문이라고요. 4xx 에러에 대해서는 **같은 키 재사용이 아니라 새 멱등키 생성**을 가장 안전한 전략으로 권합니다.[^stripe-lowlevel]
+Stripe의 저수준 에러 문서에 이 순서가 명시돼 있어요. 429로 제한된 요청은 같은 멱등키를 써도 다른 결과를 낼 수 있는데, Rate Limiter가 API의 멱등성 계층보다 먼저 실행되기 때문이라고요. 4xx 에러에 대해서는 **같은 키 재사용이 아니라 새 멱등키 생성**을 가장 안전한 전략으로 권합니다.[^stripe-lowlevel]
 
 이게 왜 중요하냐면, 429로 잘린 요청은 애초에 서버 로직에 도달하지 않았다는 뜻입니다. 중복 여부를 판단할 정보 자체가 리미터에는 없어요. 요청을 **보기 전에** 자르니까요.
 
@@ -297,22 +297,22 @@ Stripe도 같은 구분을 두고 리미터를 4종 운영한다고 공개했어
 
 | 위험 | 정의 | 대응 |
 |---|---|---|
-| Burst | 한 액션이 N회 호출을 지연 없이 순차 실행 | 아웃바운드 TPS 레이트리미터 |
+| Burst | 한 액션이 N회 호출을 지연 없이 순차 실행 | 아웃바운드 TPS Rate Limiter |
 | Concurrency Multiplication | 같은 burst가 여러 탭, 세션, 사용자로 겹침 | 동시성 세마포어, 클라이언트 single-flight |
 | Retry Storm | 실패를 백오프 없이 즉시 무한 재시도 | 백오프 재시도 정책 |
-| 무기억 재트리거 | 직전 실패를 다음 실행이 모름 | 서킷 브레이커 |
+| 무기억 재트리거 | 직전 실패를 다음 실행이 모름 | Circuit Breaker |
 
 특히 좋았던 구분이 마지막 항목입니다. 재시도 폭풍과 달리, 이건 **하나의 함수 호출 안에서의 자동 재시도가 아니라 사용자가 매번 새로 트리거하는 별도의 실행**이 문제라고 정의해요. 직전 실행이 파트너 장애로 실패했다는 사실을 다음 실행이 전혀 모르면, 파트너가 아직 복구되지 않았는데도 매번 처음부터 다시 burst를 보냅니다.
 
-그리고 하나 더. **"초당 몇 건"(속도)과 "동시에 몇 개"(동시성)는 다른 축입니다.** 초당 30건을 정확히 지켜도 각 요청이 3초 걸리면 동시에 90개가 떠 있어요. 레이트리미터 하나로 다 막으려 하면 나머지 셋을 놓칩니다.
+그리고 하나 더. **"초당 몇 건"(속도)과 "동시에 몇 개"(동시성)는 다른 축입니다.** 초당 30건을 정확히 지켜도 각 요청이 3초 걸리면 동시에 90개가 떠 있어요. Rate Limiter 하나로 다 막으려 하면 나머지 셋을 놓칩니다.
 
 ## 순서가 곧 의미다
 
-작은 발견인데 인상적이었던 게 하나 있습니다. 인터셉터 체인에서 **서킷 브레이커가 레이트리미터보다 앞**에 있어요. 코드 주석이 이유를 적어 뒀습니다. 서킷이 열려 있으면 레이트리미터의 permit을 소비하지 않고 즉시 차단하려고요.
+작은 발견인데 인상적이었던 게 하나 있습니다. 인터셉터 체인에서 **Circuit Breaker가 Rate Limiter보다 앞**에 있어요. 코드 주석이 이유를 적어 뒀습니다. 서킷이 열려 있으면 Rate Limiter의 permit을 소비하지 않고 즉시 차단하려고요.
 
 순서를 뒤집으면 이미 죽은 파트너를 향해 permit을 태우면서 대기하게 됩니다. 두 장치는 같은 체인에 있고, **배치 순서 자체가 semantics**였어요.
 
-다만 여기서 다시 걸리는 게 있습니다. 이 서킷 브레이커는 5xx 응답과 IOException만 실패로 집계하고, 4xx는 파트너가 응답한 것으로 간주해 실패로 세지 않습니다. 그런데 **429는 4xx예요.** 레이트리미터가 못 막은 초과분이 429로 돌아와도 서킷은 열리지 않는 구간이 생깁니다.
+다만 여기서 다시 걸리는 게 있습니다. 이 Circuit Breaker는 5xx 응답과 IOException만 실패로 집계하고, 4xx는 파트너가 응답한 것으로 간주해 실패로 세지 않습니다. 그런데 **429는 4xx예요.** Rate Limiter가 못 막은 초과분이 429로 돌아와도 서킷은 열리지 않는 구간이 생깁니다.
 
 구현을 열어 보니 실제로는 한 걸음 더 갑니다. 인터셉터의 분기가 "상태 코드가 500 이상이면 실패 기록, 아니면 성공 기록"이라는 이분법이라서, 429는 실패로 안 세는 정도가 아니라 **성공으로 기록됩니다.** 성공 기록은 연속 실패 카운터를 0으로 되돌리고요. 파트너가 5xx를 간헐적으로 던지는 와중에 429가 하나 섞이면, 그때까지 쌓인 실패 카운트가 초기화됩니다. 서킷이 안 열리는 게 아니라, 열릴 뻔한 것도 되돌리는 셈이에요.
 
@@ -320,8 +320,8 @@ Stripe도 같은 구분을 두고 리미터를 4종 운영한다고 공개했어
 
 - **버스트 허용치를 설정으로 노출하고 테스트로 잠근다.** 이 사고의 원인은 버스트가 라이브러리 기본값에 숨어 있었다는 겁니다. 값이 코드에 명시돼 있었다면 교체 diff에서 보였을 거예요. 시크릿 키 해싱을 테스트로 잠근 것처럼, 버스트 허용치도 잠갔어야 했습니다.
 - **커밋 제목이 "교체"면 본문에 "무엇이 달라지는가"를 쓴다.** 교체 커밋의 본문이 비어 있었던 게 결정적이었어요. 의도를 적어 둔 javadoc을 지웠으면 그 자리에 새 의도를 적어야 했고요. 이 블로그에서 반복해 온 결론이 "'왜'를 기록하라"인데, 이번엔 **적혀 있던 '왜'를 지운 것**이 사고였습니다.
-- **아웃바운드 대기에 상한과 취소 경로를 남긴다.** 커넥션 풀에는 빠른 실패를 걸어 놓고 레이트리미터에는 무제한 블로킹을 남긴 건 일관성이 아니에요. Guava에 `tryAcquire(timeout, unit)`이 있으니 최소한 상한은 걸 수 있습니다.
-- **429를 에러율과 분리해 계측한다.** 부하 테스트 계획서를 보면 Spike Test의 **통과 기준**이 "429 정상 반환, 복구 시간 30초 미만"입니다. 거절이 정상 동작이에요. 그런데 거절을 에러율에 넣고 보면 레이트리미터를 켤수록 지표가 나빠집니다. 위의 서킷 브레이커가 4xx를 실패로 안 세는 것과 같은 발상인데, 대시보드에는 그 구분이 없었습니다.
+- **아웃바운드 대기에 상한과 취소 경로를 남긴다.** 커넥션 풀에는 빠른 실패를 걸어 놓고 Rate Limiter에는 무제한 블로킹을 남긴 건 일관성이 아니에요. Guava에 `tryAcquire(timeout, unit)`이 있으니 최소한 상한은 걸 수 있습니다.
+- **429를 에러율과 분리해 계측한다.** 부하 테스트 계획서를 보면 Spike Test의 **통과 기준**이 "429 정상 반환, 복구 시간 30초 미만"입니다. 거절이 정상 동작이에요. 그런데 거절을 에러율에 넣고 보면 Rate Limiter를 켤수록 지표가 나빠집니다. 위의 Circuit Breaker가 4xx를 실패로 안 세는 것과 같은 발상인데, 대시보드에는 그 구분이 없었습니다.
 - **실측으로 알아낸 한도에는 출처와 측정 시점을 함께 적는다.** 코드 javadoc과 대외 답변서에 적힌 파트너 한도 숫자가 서로 달랐습니다. 한쪽은 단정형이고 한쪽은 실측 후 협의 중이었어요. 설정값을 그보다 보수적으로 잡은 것 같은데, 왜 그 값인지에 대한 기록이 없습니다. 지금은 아무도 어느 쪽이 맞는지 모릅니다.
 - **분산 환경에서 실효 한도를 다시 계산한다.** 정책 문서는 Redis를 상태 저장소로 쓰는 분산 카운터를 키 설계와 TTL까지 그려 뒀는데, 구현은 전부 단일 JVM 로컬 리미터(Guava + Caffeine)였습니다. 저장소 전체를 뒤져 보니 Redis 클라이언트 의존성 자체가 없어요. 분산 설계는 문서에만 있고 코드에는 도착하지 않은 겁니다. 인스턴스가 N대면 실효 한도도 N배가 됩니다. 파트너 한도의 70%를 지키겠다고 세운 버퍼가, 인스턴스를 늘리는 순간 소리 없이 사라져요.
 - **재시도 백오프에 지터를 넣는다.** 우리 재시도 정책은 1초, 2초, 4초 고정입니다. AWS가 정리한 Full Jitter는 `sleep = random_between(0, min(cap, base * 2 ** attempt))`인데,[^backoff] 고정 백오프는 실패한 클라이언트들을 같은 시점에 다시 모아서 두 번째 파도를 만들어요.
@@ -338,7 +338,7 @@ Stripe도 같은 구분을 두고 리미터를 4종 운영한다고 공개했어
 
 그러니까 트레이드오프를 고르는 것보다 먼저 해야 할 일은, **지금 무엇이 나 대신 골라져 있는지 확인하는 것**입니다. 라이브러리 기본값이 곧 정책이니까요.
 
-조금 더 넓혀 보면, 이 사고는 "기능을 구현했는가"와 "위험을 통제하고 있는가"가 서로 다른 질문이라는 이야기이기도 합니다. 레이트리미터는 구현 여부로만 보면 사고 전에도 이미 있었어요. bucket4j 버전도 Guava 버전도 코드는 정상적으로 돌아가고 있었으니까요. 하지만 위험 통제 여부로 보면 얘기가 달라집니다. 버스트가 1인지 30인지, 그 값을 누가 정했고 왜 그렇게 정했는지를 설명할 수 있는가가 진짜 질문이었습니다. 서비스는 "동작하는가"로 완성되지만, 안전은 "지금 무엇을 통제하고 있는지 설명할 수 있는가"로 완성돼요.
+조금 더 넓혀 보면, 이 사고는 "기능을 구현했는가"와 "위험을 통제하고 있는가"가 서로 다른 질문이라는 이야기이기도 합니다. Rate Limiter는 구현 여부로만 보면 사고 전에도 이미 있었어요. bucket4j 버전도 Guava 버전도 코드는 정상적으로 돌아가고 있었으니까요. 하지만 위험 통제 여부로 보면 얘기가 달라집니다. 버스트가 1인지 30인지, 그 값을 누가 정했고 왜 그렇게 정했는지를 설명할 수 있는가가 진짜 질문이었습니다. 서비스는 "동작하는가"로 완성되지만, 안전은 "지금 무엇을 통제하고 있는지 설명할 수 있는가"로 완성돼요.
 
 마지막으로 하나. 이 글의 사고는 코드 리뷰에서 잡히지 않았습니다. diff만 보면 라이브러리 임포트가 바뀌고, 한 줄이 짧아지고, try/catch가 사라진 게 전부예요. 하나같이 "정리된 것처럼" 보입니다. **삭제된 javadoc 세 줄만 읽었다면 잡혔을 겁니다.** 리뷰에서 추가된 코드는 다들 열심히 보는데, 삭제된 주석은 잘 안 봐요. 이번에 거기에 정책이 들어 있었습니다.
 
@@ -348,8 +348,8 @@ Stripe도 같은 구분을 두고 리미터를 4종 운영한다고 공개했어
 [^efd]: 전자금융감독규정(제2025-4호) 전문(약 116KB)을 내려받아 전수 검색한 결과다. 제25조 원문: "금융회사 또는 전자금융업자는 정보처리시스템의 장애예방 및 성능의 최적화를 위하여 정보처리시스템의 사용 현황 및 추이 분석 등을 정기적으로 실시하여야 한다." 출처: [전자금융감독규정 (제2025-4호)](https://ko.wikisource.org/wiki/전자금융감독규정_(제2025-4호))
 [^efa]: 전자금융거래법(법률 제21205호, 2025년 12월 16일 공포) 전문을 국가법령정보센터 오픈 API로 내려받아 전수 검색한 결과다. 조문 63개, 추출 텍스트 약 136KB. 제21조(안전성의 확보의무) 제1항 원문: "금융회사등은 전자금융거래가 안전하게 처리될 수 있도록 선량한 관리자로서의 주의를 다하여야 한다." 제2항은 "금융위원회가 정하는 기준을 준수하여야 한다"로 이어지며, 그 기준이 곧 위의 전자금융감독규정이다. 출처: [전자금융거래법 (국가법령정보센터)](https://www.law.go.kr/법령/전자금융거래법)
 [^aws-apigw]: "API Gateway throttles requests to your API using the token bucket algorithm, where a token counts for a request." / "the burst limit represents the target maximum number of concurrent request submissions that API Gateway will fulfill before returning 429 Too Many Requests error responses." 문서는 스로틀과 쿼터 모두 "best-effort basis"이며 "targets rather than guaranteed request ceilings"라고 덧붙인다. 출처: [AWS API Gateway: Throttle API requests](https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-request-throttling.html)
-[^figma]: "An alternative approach to rate limiting", Figma. 고정 윈도우 원문: "can sometimes let through twice the number of allowed requests per minute." 슬라이딩 윈도우 로그 원문: "leaves a considerably large memory footprint because it stores a value for every request." Figma의 구현: "count requests from each sender using multiple fixed time windows 1/60th the size of our rate limit's time window", 오차 방향은 "a tad harsher instead of slightly lenient". 출처: [Figma Blog](https://www.figma.com/blog/an-alternative-approach-to-rate-limiting/)
-[^cloudflare]: "How we built rate limiting capable of scaling to millions of domains", Cloudflare, 2017-06-07. 오차 실측: "an analysis on 400 million requests from 270,000 distinct sources shown" / "0.003% of requests have been wrongly allowed or rate limited". 고정 윈도우 평가: "The naive fixed window algorithm is actually not that bad". 2017년 시점의 서술이며, 현행 Cloudflare 문서는 알고리즘명을 밝히지 않는다. 출처: [Cloudflare Blog](https://blog.cloudflare.com/counting-things-a-lot-of-different-things/)
+[^figma]: "An alternative approach to rate limiting", Figma. Fixed Window 원문: "can sometimes let through twice the number of allowed requests per minute." Sliding Window Log 원문: "leaves a considerably large memory footprint because it stores a value for every request." Figma의 구현: "count requests from each sender using multiple fixed time windows 1/60th the size of our rate limit's time window", 오차 방향은 "a tad harsher instead of slightly lenient". 출처: [Figma Blog](https://www.figma.com/blog/an-alternative-approach-to-rate-limiting/)
+[^cloudflare]: "How we built rate limiting capable of scaling to millions of domains", Cloudflare, 2017-06-07. 오차 실측: "an analysis on 400 million requests from 270,000 distinct sources shown" / "0.003% of requests have been wrongly allowed or rate limited". Fixed Window 평가: "The naive fixed window algorithm is actually not that bad". 2017년 시점의 서술이며, 현행 Cloudflare 문서는 알고리즘명을 밝히지 않는다. 출처: [Cloudflare Blog](https://blog.cloudflare.com/counting-things-a-lot-of-different-things/)
 [^leaky]: "Two different methods of applying this leaky bucket analogy are described in the literature. (…) This has resulted in confusion about what the leaky bucket algorithm is and what its properties are." / "The leaky bucket as a meter is exactly equivalent to (a mirror image of) the token bucket algorithm". 최초 출처는 J. Turner, "New directions in communications (or which way to the information age?)", *IEEE Communications Magazine* 24(10), 1986, pp. 8–15, ISSN 0163-6804, [doi:10.1109/MCOM.1986.1092946](https://doi.org/10.1109/MCOM.1986.1092946). 출처: [Wikipedia: Leaky bucket](https://en.wikipedia.org/wiki/Leaky_bucket)
 [^shopify]: "Each app has access to a bucket. It can hold, say, 60 'marbles'. (…) Each second, a marble is removed from the bucket (if there are any)." 그리고 "All requests that are made after rate limits have been exceeded are throttled and an HTTP 429 Too Many Requests error is returned." 출처: [Shopify API rate limits](https://shopify.dev/docs/api/usage/limits)
 [^stripe-lowlevel]: "a request that's rate limited with a 429 can produce a different result with the same idempotency key because rate limiters run before the API's idempotency layer. (…) Even so, the safest strategy where 4xx errors are concerned is to always generate a new idempotency key." 출처: [Stripe: Low-level error handling](https://docs.stripe.com/error-low-level)
