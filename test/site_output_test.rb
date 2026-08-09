@@ -87,6 +87,14 @@ class SiteOutputTest < Minitest::Test
       # [data-theme="dark"] .flowcast-embed가 팔레트 변수를 다크로 오버라이드해야 한다. (#40)
       assert_match(/\[data-theme=("?)dark\1\]\s*\.flowcast-embed\s*\{/, flowcast_post,
         "다크 모드에서 flowcast 다이어그램 팔레트를 오버라이드하는 규칙이 있어야 한다")
+      # 각주 목록이 list-style-position: inside 기본값이라 번호가 본문과 분리된 한 줄로
+      # 떨어졌다. outside로 바꾸고 구분선·인덴트·문단 여백을 정리한다. (#42)
+      assert_match(/\.footnotes\{margin-top:3em;padding-top:1\.5em;border-top:1px solid rgba\(0,0,0,0\.12\)\}/, css,
+        "각주 상단 구분선이 있어야 한다")
+      assert_match(/\.footnotes li\{list-style-position:outside;margin-bottom:1em\}/, css,
+        "각주 번호가 매달림 인덴트(outside)여야 한다")
+      assert_match(/\.footnotes li p\{margin:0\}/, css,
+        "각주 문단 자체 여백이 없어야 한다 — li의 margin-bottom과 겹치면 간격이 2배가 된다")
     end
   end
 
