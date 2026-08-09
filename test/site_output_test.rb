@@ -108,6 +108,20 @@ class SiteOutputTest < Minitest::Test
     assert_override_wins(css, ".cp{color:#999999", ".cp,.cs,.gh,.bp{color:#6f6f6f}",
                          "rouge 의사이름색 #999999(2.85:1)")
 
+    # 2b) 코드 블록 배경(#f5f5f5)이 라이트 모드에도 있어야 한다 — 다크 모드에만 있으면
+    #     코드가 본문 텍스트와 구분되는 박스 없이 흘러 들어간다. (#42)
+    assert_match(/pre,code,\.highlight\{background:#f5f5f5\}/, css,
+                 "라이트 모드 코드 블록 배경이 없다")
+
+    # 2c) 배경을 넣으면서 대비가 재계산됐다 — rouge 기본색 중 셋이 새 배경(#f5f5f5) 기준
+    #     AA 미달이었다(.m 계열은 흰 배경 기준으로도 이미 미달). (#42)
+    assert_override_wins(css, ".na{color:teal", ".na,.no,.nv,.vc,.vg,.vi{color:#007777}",
+                         "rouge 속성명색 teal(#f5f5f5 위 4.38:1)")
+    assert_override_wins(css, ".m{color:#099", ".m,.mi,.mf{color:#007373}",
+                         "rouge 숫자색 #099(흰 배경 기준 3.49:1)")
+    assert_override_wins(css, ".nb{color:#0086B3", ".nb{color:#006a8c}",
+                         "rouge 빌트인색 #0086B3(흰 배경 기준 4.15:1)")
+
     # 3) #1ABC9C는 .call-out에만 남는다 — 어떤 페이지도 쓰지 않는 테마 dead CSS다.
     #    살아 있는 규칙으로 새어 나오면 이 개수가 늘어 실패한다.
     assert_equal 1, css.scan(/#1ABC9C/i).length,

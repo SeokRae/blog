@@ -25,6 +25,27 @@ $tags-color: #6f6f6f;    // 5.02:1
   color: #6f6f6f; // 5.02:1 (was #999999, 2.85:1)
 }
 
+// 코드 블록에 배경 박스가 없었다 — pre/code/.highlight 배경이 다크 모드에만 정의돼 있어
+// 라이트 모드에서는 코드가 본문 텍스트 사이에 색깔만 다른 글자로 흘러 들어갔다. 다크 모드와
+// 같은 형태(배경 + 패딩 + 둥근 모서리)를 라이트 모드에도 준다.
+pre, code, .highlight { background: #f5f5f5; }
+code { border-radius: 4px; padding: 0.1em 0.35em; }
+pre { border-radius: 8px; padding: 1em; overflow-x: auto; }
+pre code { padding: 0; background: none; }
+
+// 위 배경(#f5f5f5) 위에서 rouge 기본색 대비를 다시 계산하니 셋이 AA(4.5:1) 미달이었다 —
+// 배경을 넣기 전, 흰 배경 기준으로도 두 개(.m 계열 3.49:1, .nb 4.15:1)는 이미 미달이었다.
+// 위 comment 색과 같은 방식으로 어둡게 한다.
+.na, .no, .nv, .vc, .vg, .vi {
+  color: #007777; // 4.93:1 on #f5f5f5 (was teal #008080, 4.38:1)
+}
+.m, .mi, .mf {
+  color: #007373; // 5.21:1 on #f5f5f5 (was #009999, 3.20:1)
+}
+.nb {
+  color: #006a8c; // 5.60:1 on #f5f5f5 (was #0086b3, 3.81:1)
+}
+
 // 레이아웃 컬럼 통일 (#38). 테마 기본은 헤더가 전체폭(padding 3% 6%)인데 본문은 중앙
 // 컬럼이라 브랜드와 본문 좌측 edge가 어긋났다(1920폭에서 305px). 헤더 inner·본문·푸터를
 // 같은 폭·같은 좌우 패딩의 중앙 컬럼에 맞춰 한 좌측선에 정렬하고, 본문의 20% 좌우 패딩을
