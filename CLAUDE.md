@@ -43,6 +43,8 @@ frontmatter 필드 순서는 `layout → date → title → subtitle → tags`�
 
 발행된 포스트는 **그 시점의 기록**이다. 나중에 코드가 바뀌어 인용과 어긋나도 소급해 고치지 않는다 — 예: Chirpy 편이 인용한 `assert_includes search, 'integrity="sha384-'`는 발행 당시 실재했고 #12에서 제거됐지만 본문은 그대로 둔다. 지금 것으로 바꾸면 "그때 이렇게 했다"는 기록이 거짓이 된다.
 
+**문체는 습니다체를 기본으로 하고, 해요체는 리듬을 살리는 최소한의 변주로만 섞는다.** 전역 사용자 지침(`~/.claude/CLAUDE.md`)의 해요체·습니다체 5:5 규칙은 대화·일반 문서의 기본값이고, 블로그 포스트는 가독성을 위해 이 규칙의 예외를 둔다 — 사용자가 "말투를 조금 더 형식적으로 쓰는 게 가독성이 좋을 것 같다"고 판단해 블로그 글쓰기 전반에 적용하기로 했다 (2026-08-09).
+
 ## 배포: Issue-Driven + GitFlow (포스트 포함, 예외 없음)
 
 GitHub Pages가 main push(= PR merge) 시 네이티브 빌드한다. `.github/workflows/site-check.yml`가 push/PR마다 계약 테스트를 먼저 돌린다. **모든 작업은 예외 없이 Issue → main에서 feature 브랜치 분기 → PR(`Closes #N`) → merge로 진행한다 — 블로그 포스트도 마찬가지다.** merge가 main에 반영되는 순간 Pages 빌드가 트리거되므로 배포는 그대로 동작한다. blog-publisher도 main에 직접 push하지 않고 feature 브랜치 + PR로 발행하며, merge는 사용자가 한다. (2026-07-13 이전엔 "포스트는 main 직접 push" 예외를 뒀으나 사용자 지시로 폐기 — 글로벌 Issue-Driven 규칙을 그대로 따른다.)
@@ -75,3 +77,4 @@ GitHub Pages가 main push(= PR merge) 시 네이티브 빌드한다. `.github/wo
 | 2026-07-18 | Chirpy PWA 유령 서비스 워커 자폭 — 루트에 tombstone `sw.min.js` 추가(activate에서 caches 삭제 + unregister + 열린 탭 navigate), 발행·내용 계약 테스트로 잠금 | `sw.min.js`, `test/site_output_test.rb`, `CLAUDE.md` | Chirpy 시절 방문한 브라우저에 `/blog/sw.min.js` 워커가 남아 포스트 없는 옛 캐시를 계속 내줌. 서버 404만으로는 등록이 안 지워짐 — 유효한 tombstone을 받아야 자폭 (#34) |
 | 2026-07-18 | flowcast 1편에 실제 산출물 예시(시퀀스 다이어그램) 임베드 — flowcast 합성 예제의 SVG를 추출, 색을 CSS 변수로만 갖는 구조라 라이트 테마 변수값 + 클래스 규칙을 `.flowcast-embed`로 스코프해 인라인. 외부 요청 0 유지, 계약 테스트로 잠금 | `_posts/2026-07-15-flowcast-1-why-visual-docs.md`, `test/site_output_test.rb` | 시각 문서화를 주장하는 글에 그림이 없었음. mermaid CDN은 #24의 외부 요청 0 계약을 깨므로 self-contained 인라인 SVG로 (#36) |
 | 2026-07-18 | flowcast 다이어그램 다크 모드 연동 — 임베드 `<style>`에 `[data-theme="dark"] .flowcast-embed` 오버라이드 추가(원본 예제 `:root` 다크 팔레트·배경 `#0c1524`). figcaption 하드코딩 `#54667e`를 `var(--muted)`로 바꿔 테마 자동 추종, 다크 규칙을 계약 테스트로 잠금 | `_posts/2026-07-15-flowcast-1-why-visual-docs.md`, `test/site_output_test.rb` | #38 다크 모드 후, 색을 CSS 변수로만 갖는 임베드가 라이트 값을 고정해 다크 페이지 위에 라이트 패널로 떠 있었음. 변수 세트만 다크로 전환하면 SVG 전체가 따라옴. 다크 팔레트 AA 계산 확인(accent 8.47:1·muted 7.84:1·line 5.27:1·line-soft 3.08:1) (#40) |
+| 2026-08-09 | 블로그 포스트 문체 규칙 추가 — 습니다체를 기본으로 하고 해요체는 리듬 변주로만 최소 사용(전역 5:5 규칙의 블로그 전용 예외) | `CLAUDE.md` | 사용자가 레이트리미터 포스트 편집 중 "말투를 조금 더 형식적으로 쓰는 게 가독성이 좋을 것 같다"고 피드백, 적용 범위를 블로그 글쓰기 전반으로 확정 |
