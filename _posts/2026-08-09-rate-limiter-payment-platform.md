@@ -634,6 +634,20 @@ Stripe도 같은 구분을 두고 리미터를 4종 운영한다고 공개했습
 
 마지막으로 하나. 이 글의 사고는 코드 리뷰에서 잡히지 않았습니다. diff만 보면 라이브러리 임포트가 바뀌고, 한 줄이 짧아지고, try/catch가 사라진 게 전부입니다. 하나같이 "정리된 것처럼" 보입니다. **삭제된 javadoc 세 줄만 읽었다면 잡혔을 겁니다.** 리뷰에서 추가된 코드는 다들 열심히 보는데, 삭제된 주석은 잘 안 봅니다. 이번에 거기에 정책이 들어 있었습니다.
 
+## Rate Limiter를 넣기 전에 확인할 것
+
+이 사고를 정리하면서 다음에 레이트 리미팅이 필요한 순간이 오면 먼저 확인할 목록이 생겼습니다. 알고리즘 이름을 고르기 전에 이 순서대로 물어보면 됩니다.
+
+- **누구를 보호하는가.** 인바운드면 거절이 정답이고, 아웃바운드면 대기가 정답입니다. 방향이 반대면 같은 알고리즘도 정반대로 평가됩니다.
+- **버스트를 숫자로 확인했는가.** 라이브러리 문서의 "버스트 허용"이라는 문장만으로는 부족합니다. capacity나 maxBurstSeconds 같은 기본값을 소스에서 직접 찾아 설정으로 노출하고 테스트로 잠급니다.
+- **거절인가 대기인가.** 초과했을 때 클라이언트에게 무엇을 돌려줄지, 429인지 503인지, 재시도가 합리적인지까지 정해야 합니다.
+- **키당 상태 비용을 계산했는가.** 카디널리티(무한히 늘지 않는가)와 민감도(키가 시크릿이면 해싱하는가)는 알고리즘 선택과 독립된 축입니다.
+- **적용 범위를 그렸는가.** 완벽한 알고리즘도 안 걸린 경로는 못 막습니다. 같은 클라이언트를 여러 목적지가 공유하는지 확인합니다.
+- **멱등성과의 순서를 알고 있는가.** Rate Limiter는 멱등성 계층보다 앞에서 돕니다. 중복 방지는 레이트 리미팅이 아니라 멱등키의 몫입니다.
+- **거절을 에러율과 분리해 계측하는가.** 429는 정상 동작입니다. 에러율에 섞이면 리미터를 켤수록 지표가 나빠지는 착시가 생깁니다.
+
+이 일곱 가지를 확인하고 나서야 Token Bucket과 Sliding Window 중 무엇을 쓸지 고민할 차례입니다.
+
 [^rfc6585]: 429 Too Many Requests의 정본은 RFC 6585 §4다. "The 429 status code indicates that the user has sent too many requests in a given amount of time ('rate limiting')." 참고로 `Retry-After`는 **MAY**이지 필수가 아니다("MAY include a Retry-After header"). `Retry-After` 자체의 정의는 RFC 9110 §10.2.3에 있다. 다만 그 절이 예로 드는 건 503과 3xx뿐이고, RFC 9110 전문에는 `429`라는 문자열이 한 번도 등장하지 않는다(429는 RFC 6585 소관이다). 원문: "Servers send the "Retry-After" header field to indicate how long the user agent ought to wait before making a follow-up request." 출처: [RFC 6585](https://www.rfc-editor.org/rfc/rfc6585), [RFC 9110 §10.2.3](https://www.rfc-editor.org/rfc/rfc9110.html#name-retry-after)
 [^prev-post]: [장애의 원인은 다양해도, 대응이 늦어지는 이유는 하나다]({{ site.baseurl }}/2026/07/24/incident-response-pipeline.html)
 [^aws-shedding]: David Yanacek, "Using load shedding to avoid overload", Amazon Builders' Library. 인용문 원문: "At Amazon, services maintain enough excess capacity to handle Availability Zone failures without having to add more capacity. They use throttling to ensure fairness among clients." / "an overload in the bottom layer causes cascading retries that amplify the offered load exponentially" 출처: [PDF](https://d1.awsstatic.com/builderslibrary/pdfs/using-load-shedding-to-avoid-overload.pdf)
