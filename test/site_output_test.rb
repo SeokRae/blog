@@ -102,6 +102,14 @@ class SiteOutputTest < Minitest::Test
         "알고리즘 애니메이션이 외부 스타일시트를 끌어오면 안 된다")
       refute_match(%r{<script[^>]*\ssrc="https?://}, rate_limiter_post,
         "알고리즘 애니메이션이 외부 스크립트를 끌어오면 안 된다")
+      # 표의 "메모리" 열(O(1)/O(n)/O(큐 길이))이 버스트 축과 달리 시각적으로 구분되지
+      # 않았다. 패널마다 눈금 5칸짜리 상태 인디케이터를 추가해, O(1)은 고정 1칸, O(n)·
+      # O(큐 길이)는 늘고 주는 애니메이션으로 대비시킨다. (#84)
+      assert_equal 30, rate_limiter_post.scan(/class="rl-mem-track"/).length,
+        "패널 6개 × 눈금 5칸의 메모리 인디케이터가 있어야 한다"
+      # 2열 그리드로 넓혀 패널 하나의 실제 렌더 폭을 키운다 (277px → 420px, 960px 컬럼 기준)
+      assert_match(/\.rl-algo-embed \.rl-grid\{\s*display:grid;grid-template-columns:repeat\(2,1fr\)/,
+        rate_limiter_post, "알고리즘 패널이 2열 그리드여야 한다")
       # 각주 목록이 list-style-position: inside 기본값이라 번호가 본문과 분리된 한 줄로
       # 떨어졌다. outside로 바꾸고 구분선·인덴트·문단 여백을 정리한다. (#42)
       assert_match(/\.footnotes\{margin-top:3em;padding-top:1\.5em;border-top:1px solid rgba\(0,0,0,0\.12\)\}/, css,
