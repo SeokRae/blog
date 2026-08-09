@@ -111,6 +111,17 @@ class SiteOutputTest < Minitest::Test
       # 6개 패널이 2행에 다 들어와 스크롤도 줄어든다. (#87)
       assert_match(/\.rl-algo-embed \.rl-grid\{\s*display:grid;grid-template-columns:repeat\(3,1fr\)/,
         rate_limiter_post, "알고리즘 패널이 3열 그리드여야 한다")
+      # 표가 세로선까지 촘촘한 격자였다. 세로선 없애고 가로 구분선 + 지브라 스트라이프로
+      # 바꾸고, 알고리즘 비교표의 메모리·정확도 열에 상태색(tbl-good/tbl-warn)을 입혀
+      # 알고리즘 애니메이션의 메모리 인디케이터와 시각 언어를 통일한다. (#89)
+      assert_match(/th,td\{border:none;border-bottom:1px solid rgba\(0,0,0,0\.1\)/,
+        css, "표 세로선이 없고 가로 구분선만 있어야 한다")
+      assert_match(/tbody tr:nth-child\(even\)\{background:rgba\(0,0,0,0\.025\)\}/,
+        css, "지브라 스트라이프가 있어야 한다")
+      assert_equal 4, rate_limiter_post.scan(/class="tbl-good"/).length,
+        "O(1) 4곳에 상태색이 있어야 한다"
+      assert_equal 3, rate_limiter_post.scan(/class="tbl-warn"/).length,
+        "O(n)·O(큐 길이)·경계 버그 3곳에 상태색이 있어야 한다"
       # 각주 목록이 list-style-position: inside 기본값이라 번호가 본문과 분리된 한 줄로
       # 떨어졌다. outside로 바꾸고 구분선·인덴트·문단 여백을 정리한다. (#42)
       assert_match(/\.footnotes\{margin-top:3em;padding-top:1\.5em;border-top:1px solid rgba\(0,0,0,0\.12\)\}/, css,

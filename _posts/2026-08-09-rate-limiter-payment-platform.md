@@ -187,12 +187,12 @@ stopwatch.sleepMicrosUninterruptibly(microsToWait);
 
 | 알고리즘 | 키당 상태 | 메모리 | 정확도 | 버스트 |
 |---|---|---|---|---|
-| Token Bucket | 토큰 수 + 최종 갱신 시각 | O(1) | 정확 | 허용(용량만큼) |
-| Leaky Bucket (meter형) | TAT 또는 (X, LCT) | O(1) | 정확 | 설정에 따름 |
-| Leaky Bucket (queue형) | 큐 | O(큐 길이) | 정확 | 흡수 후 평활화 |
-| Fixed Window Counter | 정수 1개 + TTL | O(1) | 경계에서 최대 2배 통과 | 경계에서 스파이크 |
-| Sliding Window Log | 요청마다 타임스탬프 | O(n) | 정확 | 정확히 차단 |
-| Sliding Window Counter | 카운터 2개 또는 60개 | O(1) | 근사 | 평활화 |
+| Token Bucket | 토큰 수 + 최종 갱신 시각 | <span class="tbl-good">O(1)</span> | 정확 | 허용(용량만큼) |
+| Leaky Bucket (meter형) | TAT 또는 (X, LCT) | <span class="tbl-good">O(1)</span> | 정확 | 설정에 따름 |
+| Leaky Bucket (queue형) | 큐 | <span class="tbl-warn">O(큐 길이)</span> | 정확 | 흡수 후 평활화 |
+| Fixed Window Counter | 정수 1개 + TTL | <span class="tbl-good">O(1)</span> | <span class="tbl-warn">경계에서 최대 2배 통과</span> | 경계에서 스파이크 |
+| Sliding Window Log | 요청마다 타임스탬프 | <span class="tbl-warn">O(n)</span> | 정확 | 정확히 차단 |
+| Sliding Window Counter | 카운터 2개 또는 60개 | <span class="tbl-good">O(1)</span> | 근사 | 평활화 |
 
 <figure class="rl-algo-embed">
 <style>

@@ -69,6 +69,40 @@ pre code { padding: 0; background: none; }
   margin-left: 0.3em;
 }
 
+// 표가 세로선까지 촘촘한 격자라 칸 하나하나를 눈으로 좇아야 했다. 세로선을 없애고
+// 가로 구분선만 남기며(recessive grid), 헤더는 배경 톤 + 굵은 밑줄로 구분하고,
+// 지브라 스트라이프로 행을 스캔하기 쉽게 한다.
+table {
+  border: none;
+}
+th, td {
+  border: none;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  padding: 0.6em 1em;
+}
+td {
+  font-variant-numeric: tabular-nums;
+}
+thead th {
+  background: rgba(0, 0, 0, 0.035);
+  border-bottom: 2px solid rgba(0, 0, 0, 0.35);
+}
+tbody tr:nth-child(even) {
+  background: rgba(0, 0, 0, 0.025);
+}
+
+// 상태색. 알고리즘 비교표의 메모리(O(1) vs O(n)/O(큐 길이)), 정확도(경계 버그) 열에 써서
+// 알고리즘 애니메이션의 메모리 인디케이터와 같은 시각 언어로 묶는다. 색만으로 구분하지
+// 않도록 텍스트 자체(예: "O(1)", "O(n)")가 항상 같이 있다.
+.tbl-good {
+  color: #1a7a4c; // 5.20:1 on white (rl-algo-embed --ok과 동일)
+  font-weight: 600;
+}
+.tbl-warn {
+  color: #b5460a; // 5.32:1 on white (rl-algo-embed --warn과 동일)
+  font-weight: 600;
+}
+
 // 레이아웃 컬럼 통일 (#38). 테마 기본은 헤더가 전체폭(padding 3% 6%)인데 본문은 중앙
 // 컬럼이라 브랜드와 본문 좌측 edge가 어긋났다(1920폭에서 305px). 헤더 inner·본문·푸터를
 // 같은 폭·같은 좌우 패딩의 중앙 컬럼에 맞춰 한 좌측선에 정렬하고, 본문의 20% 좌우 패딩을
@@ -190,6 +224,10 @@ html[data-theme="dark"] { background: $dk-bg; }
   blockquote { border-color: $dk-border; }
   hr { border-top-color: $dk-border; border-bottom-color: $dk-bg; }
   .footnotes { border-top-color: $dk-border; }
+  thead th { background: rgba(255, 255, 255, 0.04); border-bottom-color: rgba(255, 255, 255, 0.35); }
+  tbody tr:nth-child(even) { background: rgba(255, 255, 255, 0.025); }
+  .tbl-good { color: #5cd696; } // 10.03:1 on #0f1420 (rl-algo-embed --ok 다크와 동일)
+  .tbl-warn { color: #ff9a5c; } // 8.73:1 on #0f1420 (rl-algo-embed --warn 다크와 동일)
 
   // 헤더 (배경·경계선)
   .site-header { background: $dk-bg; border-bottom-color: $dk-border; }
