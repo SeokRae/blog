@@ -107,9 +107,10 @@ class SiteOutputTest < Minitest::Test
       # O(큐 길이)는 늘고 주는 애니메이션으로 대비시킨다. (#84)
       assert_equal 30, rate_limiter_post.scan(/class="rl-mem-track"/).length,
         "패널 6개 × 눈금 5칸의 메모리 인디케이터가 있어야 한다"
-      # 2열 그리드로 넓혀 패널 하나의 실제 렌더 폭을 키운다 (277px → 420px, 960px 컬럼 기준)
-      assert_match(/\.rl-algo-embed \.rl-grid\{\s*display:grid;grid-template-columns:repeat\(2,1fr\)/,
-        rate_limiter_post, "알고리즘 패널이 2열 그리드여야 한다")
+      # 2열로 넓혔더니 패널 하나에 세로 여백이 과해 보인다는 피드백으로 3열로 되돌렸다.
+      # 6개 패널이 2행에 다 들어와 스크롤도 줄어든다. (#87)
+      assert_match(/\.rl-algo-embed \.rl-grid\{\s*display:grid;grid-template-columns:repeat\(3,1fr\)/,
+        rate_limiter_post, "알고리즘 패널이 3열 그리드여야 한다")
       # 각주 목록이 list-style-position: inside 기본값이라 번호가 본문과 분리된 한 줄로
       # 떨어졌다. outside로 바꾸고 구분선·인덴트·문단 여백을 정리한다. (#42)
       assert_match(/\.footnotes\{margin-top:3em;padding-top:1\.5em;border-top:1px solid rgba\(0,0,0,0\.12\)\}/, css,
