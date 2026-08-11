@@ -82,7 +82,7 @@ class PoolMetricsBindingIntegrationTest {
 
 > 프로퍼티 공유 여부(기준 1) 하나만 보고 기계적으로 판단하지 않는다. 기준 3에 해당하는데 기준 1만 보고 옮기면 조용히 잘못된 선택이 된다.
 
-**이 경고는 예방적 조언이 아니라 사후 기록입니다.** 누군가 그 자리를 밟았기 때문에 붙은 문장이고, 밟은 사람과 문장을 적은 사람이 같습니다.
+**이 경고는 예방적 조언이 아니라 사후 기록입니다.** 누군가 그 자리를 밟았기 때문에 붙은 문장이고, 밟은 자리와 문장이 적힌 자리 사이의 거리가 하루였습니다.
 
 다만 이것을 부주의로 읽으면 진단을 놓칩니다. **문제는 규칙이 불완전했다는 것입니다.** 기준 1이 유일한 기준이던 시절에는 기준 1만 보고 판단하는 것이 **규칙을 정확히 지키는 행동**이었습니다. 규율의 문제가 아니었습니다.
 
@@ -91,7 +91,7 @@ class PoolMetricsBindingIntegrationTest {
 - 기준 1은 **코드를 보면 바로 확인됩니다.** 메서드마다 `withPropertyValues`가 다른지만 보면 돼요.
 - 기준 2와 3은 **무엇이 깨지는지 알아야 확인됩니다.** 자동설정 순서 보장이 무엇인지, `@Autowired`로 표현할 수 없는 단언이 무엇인지를 미리 알아야 합니다.
 
-**검사하기 쉬운 기준이 하나 있으면 그게 유일한 기준인 것처럼 작동합니다.** 나머지가 없어서가 아니라 확인 비용이 높아 뒤로 밀리기 때문이고, 밀린 자리에서 조용히 깨집니다.
+**검사하기 쉬운 기준이 하나 있으면 그게 유일한 기준인 것처럼 작동합니다.** 이 사건에서는 나머지 둘이 아직 문서에 없었고, 없었던 이유가 바로 확인 비용입니다. 무엇이 깨지는지 알기 전에는 기준으로 적을 수조차 없으니까요. 그리고 기준이 이미 셋 다 적혀 있는 지금도 같은 힘이 남아 있습니다. 확인이 싼 기준이 먼저 소진되고, 비싼 기준은 뒤로 밀립니다.
 
 지금 그 문서의 세 기준은 공개 플러그인 스킬로도 일반화돼 있는데, 원문은 이렇습니다.[^skill]
 
@@ -102,23 +102,16 @@ class PoolMetricsBindingIntegrationTest {
 기준 1이 유일했던 게 문제였다는 말은 기준 1이 틀렸다는 말이 아닙니다. 기준 1이 실제로 필요한 자리부터 보겠습니다. 액추에이터 노출 정책을 검증하는 테스트입니다.
 
 ```java
-// [재구성]
-class ActuatorExposureIntegrationTest {
+// [재구성] 같은 클래스 안에서 프로파일만 바꿔 두 컨텍스트를 띄운다
+private final ApplicationContextRunner contextRunner = new ApplicationContextRunner()
+        .withInitializer(new ConfigDataApplicationContextInitializer())
+        .withPropertyValues("spring.profiles.active=test")
+        .withUserConfiguration(TestConfig.class);
 
-    private final ApplicationContextRunner contextRunner = new ApplicationContextRunner()
-            .withInitializer(new ConfigDataApplicationContextInitializer())
-            .withPropertyValues("spring.profiles.active=test")
-            .withUserConfiguration(TestConfig.class);
-
-    @Test
-    void dev_프로필_오버라이드는_base_노출을_잃지_않는다() {
-        ApplicationContextRunner devRunner = new ApplicationContextRunner()
-                .withInitializer(new ConfigDataApplicationContextInitializer())
-                .withPropertyValues("spring.profiles.active=dev")
-                .withUserConfiguration(TestConfig.class);
-
-        devRunner.run(context -> { ... });
-    }
+@Test
+void dev_프로필_오버라이드는_base_노출을_잃지_않는다() {
+    ApplicationContextRunner devRunner = /* 위와 같고 profiles.active=dev */;
+    devRunner.run(context -> { ... });
 }
 ```
 
@@ -166,7 +159,9 @@ class AlertWiringIntegrationTest {
 }
 ```
 
-이 클래스도 프로퍼티를 고정 공유합니다. 기준 1에 걸리지 않습니다. 그런데 `doesNotHaveBean`과 `isNotSameAs`와 `hasNotFailed`는 **`@Autowired`로 표현할 방법이 없습니다.** "없어야 정상인 빈"을 주입받을 수는 없으니까요. 컨텍스트가 기동에 실패해야 정상인 케이스도 마찬가지입니다. `@Autowired`에서는 테스트 메서드가 실행되기도 전에 셋업 단계에서 예외가 터집니다.
+이 클래스도 프로퍼티를 고정 공유합니다. 기준 1에 걸리지 않습니다. 그런데 `doesNotHaveBean`과 `isNotSameAs`와 `hasNotFailed`는 **필드 주입만으로는 표현할 수 없습니다.** "없어야 정상인 빈"을 주입받을 수는 없으니까요.
+
+정확히 하자면 `ApplicationContext`를 통째로 주입받아 `containsBean`을 직접 물으면 빈의 존재와 부재는 확인할 수 있습니다. 그러나 그렇게 하는 순간 그 테스트는 컨텍스트를 조립하는 게 아니라 이미 조립된 컨텍스트를 심문하는 일이 됩니다. 그리고 **기동에 실패해야 정상인 케이스는 그 방법으로도 안 됩니다.** `@Autowired`에서는 테스트 메서드가 실행되기도 전에 셋업 단계에서 예외가 터지니까요.
 
 **컨텍스트 구성 방식은 그 테스트가 쓸 수 있는 단언의 집합을 미리 정합니다.** 구성 방식을 고르는 것은 문법 취향의 문제가 아니라, 무엇을 검증할 수 있는지를 고르는 일입니다.
 
@@ -232,15 +227,17 @@ static void configureProperties(DynamicPropertyRegistry registry) {
 | `spring.jpa.hibernate.ddl-auto` | `create-drop` | `create-drop` |
 | `spring.flyway.enabled` | `false` | `false` |
 
-설정 파일은 H2를 말하고 베이스 클래스는 PostgreSQL을 말합니다. 둘 중 하나는 죽은 코드인데 파일만 봐서는 어느 쪽인지 알 수 없습니다.
+설정 파일은 H2를 말하고 베이스 클래스는 PostgreSQL을 말합니다. 승부는 이미 정해져 있어요. `@DynamicPropertySource`로 등록한 값은 `@TestPropertySource`와 OS 환경변수와 시스템 프로퍼티와 `@PropertySource`보다 우선하므로[^dynprec] PostgreSQL이 이기고 yml의 H2 설정은 죽은 코드입니다. **파일만 봐서 알 수 없는 것은 승자가 아니라 어느 쪽이 의도였는가입니다.**
 
 **이 표가 무서운 이유는 나머지 두 줄이 우연히 같다는 데 있습니다.** 값이 같으면 아무 증상이 없고, 아무 증상이 없으면 아무도 확인하지 않습니다. 그러다 한 줄이 갈라지면 그때부터는 읽는 사람이 매번 처음부터 다시 판단해야 합니다.
 
 ## 여기서 가설을 하나 검증했습니다
 
-지금까지가 "어떻게 띄우는가"의 판단 이야기였다면, 남은 절반은 "그래서 몇 개가 뜨는가"입니다. 이 글을 쓰기 전에 세운 가설은 이랬습니다.
+지금까지가 "어떻게 띄우는가"의 판단 이야기였다면, 남은 절반은 "그래서 몇 개가 뜨는가"입니다. 같은 스킬 문서에는 세 신호 말고 스코프 원칙도 있습니다. 검증 대상 빈과 필요한 설정만 최소로 구성하는 것이 기본이고, 전체 자동설정을 올리는 것은 스모크와 E2E 두 역할로만 한정하라는 내용이에요.
 
-> "컨텍스트 스코프는 좁힘이 기본"이라는 원칙과 "설정을 통일해 컨텍스트 캐시를 공유하라"는 현실이 부딪힌다. 클래스마다 `classes=` 목록을 손으로 다르게 적는 건 좁힘이 아니라 파편화다.
+여기서 걸리는 게 있었습니다. 좁히라는 원칙과, 앞에서 본 베이스 클래스 주석의 "설정을 통일해 캐시를 공유하라"가 서로 반대 방향을 가리키는 것처럼 보이거든요. 그래서 이 글을 쓰기 전에 가설을 하나 세웠습니다.
+
+> 좁힘과 캐시 공유가 부딪힌다. 클래스마다 `classes=` 목록을 손으로 다르게 적는 건 좁힘이 아니라 파편화다.
 
 결론부터 말하면 **가설의 방향은 맞았고 지목한 범인은 틀렸습니다.** 파편화는 실제로 있었지만 `classes=`가 만든 것이 아니었습니다. 확인한 순서대로 옮기겠습니다.
 
@@ -301,7 +298,11 @@ private static String[] processActiveProfiles(@Nullable String[] activeProfiles)
 }
 ```
 
-`LinkedHashSet`은 중복만 제거하고 삽입 순서를 유지합니다. 정렬하지 않습니다. 그리고 키는 `Arrays.hashCode(this.activeProfiles)`, 그러니까 **배열의 순서까지 보는 해시**입니다. 따라서 `{"a","b","c"}`와 `{"a","c","b"}`는 활성 프로파일 집합이 완전히 같고 애플리케이션 동작도 완전히 같은데 **서로 다른 컨텍스트**가 됩니다.
+`LinkedHashSet`은 중복만 제거하고 삽입 순서를 유지합니다. 정렬하지 않습니다. 그리고 키는 `Arrays.hashCode(this.activeProfiles)`, 그러니까 **배열의 순서까지 보는 해시**입니다. 따라서 `{"a","b","c"}`와 `{"a","c","b"}`는 활성 프로파일 집합이 같은데도 **서로 다른 컨텍스트**가 됩니다.
+
+여기서 프레임워크를 탓하기 쉬운데, 순서를 무시하는 쪽이 오히려 틀립니다. Spring Boot는 여러 프로파일이 지정되면 **나중에 적은 것이 이기는** 전략을 씁니다. `prod,live`를 켜면 `application-live`의 값이 `application-prod`의 값을 덮어써요.[^lastwins] 두 프로파일이 같은 키를 다르게 정의하고 있으면 순서가 실제 동작을 바꿉니다. 순서가 의미를 가질 수 있으니 캐시 키도 순서를 봐야 하는 겁니다.
+
+**그러니 문제는 프레임워크가 아니라 우리 쪽에 있습니다.** 순서가 의미를 갖는 자리에서 순서를 의미 없이 섞어 쓰면, 그 대가를 컨텍스트 하나를 더 띄우는 비용으로 치릅니다.
 
 **둘째, `@DynamicPropertySource`는 값이 아니라 메서드로 키에 참여합니다.**
 
@@ -323,7 +324,7 @@ public int hashCode() {
 
 등록하는 값이 아니라 `Set<Method>`가 키입니다. 그래서 베이스 클래스에 `@DynamicPropertySource` 메서드가 하나 있으면 하위 클래스 전부가 **같은 `Method` 객체**를 공유해 컨텍스트가 하나로 모입니다. 반대로 클래스마다 자기 static 메서드를 따로 두면 **똑같은 값을 등록해도** 컨텍스트가 갈립니다.
 
-**셋째, `@MockBean` 계열은 정의 집합으로 키에 참여합니다.** `Set`의 `equals`를 쓰므로 **선언 순서는 무관**합니다.[^mockito] 프로파일과 정반대입니다. 같은 프레임워크가 "같은 뜻인데 표기가 다르면?"이라는 한 질문에 두 군데서 반대로 답합니다.
+**셋째, `@MockBean` 계열은 정의 집합으로 키에 참여합니다.** `Set`의 `equals`를 쓰므로 **선언 순서는 무관**합니다.[^mockito] 프로파일과 정반대인데, 이것도 변덕이 아니라 각자의 의미론을 따른 결과입니다. mock을 어느 순서로 선언하든 동작은 달라질 수 없으니 집합으로 보고, 프로파일은 순서가 값을 바꿀 수 있으니 순서까지 봅니다. **캐시 키 설계를 읽으면 그 프레임워크가 무엇을 의미 있는 차이로 여기는지가 드러납니다.**
 
 **셋 다 애노테이션의 겉모습으로는 알 수 없고, 소스를 열어야 알 수 있습니다.** 다음 두 절은 이 셋이 만든 결과입니다.
 
@@ -340,7 +341,9 @@ public int hashCode() {
 @ActiveProfiles(profiles = {"default", "rest", "dev", "l4"})      // 나머지 다수
 ```
 
-각 쌍은 활성 프로파일이 완전히 같고 애플리케이션 동작도 같습니다. 그런데 컨텍스트는 두 개 뜹니다. 덤이 하나 더 있습니다. 어떤 클래스는 프로파일 목록 안에서 항목 하나만 주석 처리했습니다.
+각 쌍은 활성 프로파일 집합이 완전히 같은데 컨텍스트는 두 개 뜹니다. 순서가 의도된 것이었다면 같은 모듈, 같은 베이스 아래에서 두 표기가 섞여 있을 이유가 없으니, 이건 의미 없는 차이가 비용을 만든 자리로 보입니다.
+
+덤이 하나 더 있습니다. 어떤 클래스는 프로파일 목록 안에서 항목 하나만 주석 처리했습니다.
 
 ```java
 // [재구성]
@@ -349,15 +352,15 @@ public int hashCode() {
 })
 ```
 
-주석 한 줄이 세 번째 조합을 만들었습니다.
+주석 한 줄이 세 번째 조합을 만들었습니다. 다만 이건 앞의 두 쌍과 종류가 다릅니다. 순서가 아니라 **집합 자체가 달라졌으니** 그 프로파일이 정의하던 값이 통째로 빠지고, 캐시만이 아니라 동작에도 영향이 갑니다. 반대로 말하면 이쪽은 언젠가 무언가 실패해서 드러날 여지라도 있습니다.
 
-**이 결함은 코드 리뷰로 안 걸립니다. 실행해도 안 걸립니다.** 테스트는 전부 초록불이고, 느려질 뿐입니다. 1편의 주제 질문은 "무엇이 바뀌면 이게 실패해야 하는가"였는데, 이 결함은 그 질문의 사각지대에 있습니다. **아무것도 실패하지 않는데 비용만 늡니다.** 테스트가 아니라 테스트를 돌리는 인프라의 문제라서, 어떤 단언을 어떻게 써도 이걸 잡지 못합니다.
+**순서만 다른 두 쌍은 그렇지 않습니다. 코드 리뷰로 안 걸리고 실행해도 안 걸립니다.** 테스트는 전부 초록불이고, 느려질 뿐입니다. 1편의 주제 질문은 "무엇이 바뀌면 이게 실패해야 하는가"였는데, 이 결함은 그 질문의 사각지대에 있습니다. **아무것도 실패하지 않는데 비용만 늡니다.** 테스트가 아니라 테스트를 돌리는 인프라의 문제라서, 어떤 단언을 어떻게 써도 이걸 잡지 못합니다.
 
 ### 그래서 직접 세어 봤습니다
 
 여기서 원래 가설로 돌아갑니다. 파서를 새로 짜서 `src/test/java` 아래 Java 파일을 전부 훑고, 클래스 레벨 애노테이션과 상속 체인을 합쳐 "이 클래스가 실제로 요구하는 컨텍스트 설정"을 튜플로 만든 뒤 중복을 셌습니다.[^count]
 
-겉보기 숫자는 가설을 지지했습니다. `classes=`로 좁힌 39개 클래스가 컨텍스트 26개를 만들고(1.5 대 1), 무인자 `@SpringBootTest` 계열 754클래스가 118개를 만듭니다(6.4 대 1). 재사용 비만 보면 `classes=`가 범인 같습니다.
+겉보기 숫자는 가설을 지지했습니다. `classes=`로 좁힌 39개 클래스가 컨텍스트 26개를 만들고(1.5 대 1), 무인자 `@SpringBootTest` 계열 754클래스가 118개를 만듭니다(6.4 대 1). 재사용 비만 보면 `classes=`가 범인 같습니다. 물론 이 합산도 방금 말한 함정을 그대로 밟고 있어요. 40개 JVM에 흩어진 숫자를 더한 것이라 캐시 관점에서는 의미가 없습니다. 그래서 이건 가설을 세운 근거로만 쓰고 버립니다.
 
 그런데 **`classes=`를 쓴 자리를 실제로 열어 보면 대부분 그게 옳은 선택입니다.** 가장 선명한 예가 프로파일 바인딩 테스트 다섯 벌입니다. 각각 `@SpringBootTest(classes = 자기TestConfig.class, webEnvironment = NONE)`에 `@ActiveProfiles`가 `dev`, `prod`, `stg`, `dr`, `test`로 다릅니다. 다섯 개가 각자 다른 컨텍스트를 만드는데, **`@ActiveProfiles`가 이미 다르므로 `classes=`를 지워도 여전히 다섯 개**입니다. 여기서 `classes=`가 한 일은 파편화가 아니라, 다섯 개를 각각 **작게** 만든 것입니다.
 
@@ -381,32 +384,22 @@ public int hashCode() {
 그리고 저장소가 이 판단을 **주석으로 먼저 적어 뒀습니다.**
 
 ```java
-// [재구성]
+// [재구성] 계약 테스트 공통 베이스의 javadoc과 선언부
 /**
- * 인바운드 HTTP 표면 계약 특성 테스트 공통 베이스.
- *
- * DB 없이 풀 컨텍스트 + MockMvc를 기동한다.
  * 설정을 통일해 컨텍스트 캐시를 공유하므로, 하위 클래스는 @TestPropertySource를
  * 추가하지 말고 이 베이스의 컨텍스트를 그대로 사용한다.
  */
 @SpringBootTest
 @AutoConfigureMockMvc
-@TestPropertySource(properties = {
-        "spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.OracleDialect",
-        "spring.jpa.hibernate.ddl-auto=none",
-        "management.health.db.enabled=false"
-})
+@TestPropertySource(properties = { /* dialect, ddl-auto, health 3종 */ })
 public abstract class HttpContractTestBase {
-
-    @Autowired
-    protected MockMvc mockMvc;
 
     @MockitoBean
     DataSource dataSource;
 }
 ```
 
-**"설정을 통일해 컨텍스트 캐시를 공유하므로, 하위 클래스는 `@TestPropertySource`를 추가하지 말라."** mock도 베이스에 답니다. 앞에서 본 대로 그러면 키가 하나로 모입니다.
+**"하위 클래스는 `@TestPropertySource`를 추가하지 말라."** 프로퍼티도 mock도 베이스에만 답니다. 앞에서 본 대로 그러면 키가 하나로 모입니다.
 
 그러니 정확한 명제는 이렇습니다. **좁힘과 공유는 대립하지 않습니다. 둘 다 "설정을 어디에 적는가"의 문제이고, 베이스 클래스가 좁힘을 정의하면 둘 다 얻습니다.**
 
@@ -422,7 +415,7 @@ public abstract class HttpContractTestBase {
 
 **16개 전부가 컨텍스트 하나를 공유합니다.** `@MybatisTest`는 슬라이스라 웹 레이어, 서비스 빈, 대부분의 자동설정을 뺍니다. 좁힘이 애노테이션 하나로 표현돼 있고, 그 선언이 동시에 캐시 키가 됩니다. 손으로 `classes = {MapperConfig.class, DataSourceConfig.class, ...}`를 적었다면 클래스마다 목록이 미묘하게 달라졌을 겁니다.
 
-**1편에서 약한 단언이 가장 심하게 몰려 있다고 지목한 코드가, 컨텍스트 구성 축에서는 저장소에서 가장 잘 만들어진 축입니다.** 테스트가 좋다거나 나쁘다는 판정을 단일 축으로 내릴 수 없다는 게 여기서 숫자로 확인됩니다.
+**1편에서 약한 단언이 가장 심하게 몰려 있다고 지목한 코드가, 컨텍스트 구성 축에서는 교과서적으로 짜여 있습니다.** 테스트가 좋다거나 나쁘다는 판정을 단일 축으로 내릴 수 없다는 게 여기서 숫자로 확인됩니다.
 
 ### 가장 좁힌 컨텍스트는 컨텍스트를 안 띄우는 것입니다
 
@@ -488,7 +481,7 @@ Failed to load ApplicationContext for [MergedContextConfiguration@...
   parent = null]
 ```
 
-클래스명만 중립화했고 값은 실제 출력입니다. 앞 절의 셋이 여기서 눈으로 확인됩니다.
+클래스명만 중립화했고 값은 실제 출력입니다. 앞에서 소스로 읽었던 키의 구성요소들이 여기서는 값으로 보입니다.
 
 - **`@SpringBootTest` 하나만 달아도 커스터마이저가 12개** 붙습니다. 전부 Spring Boot가 자동으로 붙인 것입니다.
 - `MockitoContextCustomizer@0`과 `DynamicPropertiesContextCustomizer@0`의 해시코드 0은 **빈 집합**입니다. mock도 `@DynamicPropertySource`도 없으니 이 자리는 아직 키를 가르지 않습니다. **하나라도 추가하는 순간 갈립니다.**
@@ -579,31 +572,25 @@ public final class OracleTestContainer {
 | `@Async("이름")` | 이 풀을 따로 쓴다 | 같은 인스턴스로 해석돼도 아무 말이 없다 | 없음 (격리만 무너짐) |
 | `@ContextConfiguration(classes = {A, B})` | 이 둘을 등록한다 | 자동설정 간 순서 보장을 잃는다 | 값 하나만 `null` |
 
-**넷 다 예외가 나지 않습니다.** 그리고 넷 다 1편의 주제 질문에 답할 수 없는 종류의 결함입니다. "무엇이 바뀌면 이 테스트가 실패해야 하는가"를 아무리 잘 물어도, 여기서 바뀌는 것은 테스트가 아니라 **테스트를 띄우는 방식**이니까요. 단언을 아무리 잘 써도 못 잡습니다.
+**넷 다 예외가 나지 않습니다.** 다만 잡히는 방식은 둘로 갈립니다.
+
+아래 둘은 **구성 자체를 단언하는 테스트가 있으면** 잡힙니다. Hikari의 `null`이 드러난 것은 하필 그 값을 확인하는 두 줄이 있었기 때문이고, `@Async` 별칭 충돌은 두 executor가 다른 인스턴스인지 묻는 단언이 잡습니다. 다만 둘 다 **그 전환과 무관한 단언이 마침 거기 있었기 때문에** 걸린 것이지, 전환의 안전성을 확인하려고 쓴 단언이 아니었습니다.
+
+위의 둘은 어떤 단언으로도 잡히지 않습니다. 프로파일 순서는 증상이 비용뿐이고, `withReuse`는 증상이 인프라 타임아웃으로 나타나 원인과 두 단계 떨어져 있어요. **"무엇이 바뀌면 이 테스트가 실패해야 하는가"를 아무리 잘 물어도**, 여기서 바뀌는 것은 테스트가 아니라 테스트를 띄우는 방식이니까요.
 
 ## 무엇을 배웠는가
 
 **첫째, 검사하기 쉬운 기준이 하나 있으면 그게 유일한 기준인 것처럼 작동합니다.** 기준 1은 코드를 보면 바로 확인되고 기준 2와 3은 무엇이 깨지는지 알아야 확인됩니다. 그래서 하루 동안 기준 1만 작동했고, 그 하루에 하나가 조용히 깨졌습니다. 1편은 기준이 있는데 안 지켜진 이야기였고, 이 편은 **기준이 지켜졌는데 기준이 틀렸던** 이야기입니다.
 
-**둘째, 컨텍스트 구성 방식은 그 테스트가 쓸 수 있는 단언의 집합을 미리 정합니다.** `doesNotHaveBean`, `isNotSameAs`, `hasNotFailed`는 `@Autowired`로 표현할 방법이 없습니다. 반대로 `@Autowired` 필드에 대한 `isNotNull()`은 구조적으로 항진명제가 됩니다. 구성 선택은 문법 취향이 아니라 검증 범위의 선택입니다.
+**둘째, 컨텍스트 구성 방식은 그 테스트가 쓸 수 있는 단언의 집합을 미리 정합니다.** 기동 실패가 기대 결과인 케이스는 `@Autowired`로 표현할 방법이 아예 없고, 빈의 부재나 동일성은 컨텍스트를 통째로 주입받아야 겨우 물을 수 있습니다. 반대로 `@Autowired` 필드에 대한 `isNotNull()`은 구조적으로 항진명제가 됩니다. 구성 선택은 문법 취향이 아니라 검증 범위의 선택입니다.
 
 **셋째, 좁힘과 공유는 대립하지 않습니다.** 둘 다 "설정을 어디에 적는가"의 문제이고, 베이스 클래스가 좁힘을 정의하면 둘 다 얻습니다. 파편화를 만든 건 `classes=`가 아니라 키를 가르는 축이 클래스마다 제각각인 것이었습니다. 같은 애플리케이션의 원본과 재구축본이 12클래스 12컨텍스트와 16클래스 2컨텍스트로 갈린 차이가 베이스 클래스 하나였습니다.
 
 **넷째, 가장 좁힌 컨텍스트는 컨텍스트를 안 띄우는 것입니다.** 그리고 버릴 때는 **무엇을 못 보게 되는지 함께 적고 그 책임을 어디로 옮겼는지까지** 적어야 합니다. 다섯 파일에서 Spring을 걷어낸 커밋이 relaxed binding 검증 책임을 실제 yml을 로드하는 테스트 하나로 모은 것이 그 모습입니다.
 
-**다섯째, 선언이 맞아도 런타임은 다를 수 있고, 그때 예외는 나지 않습니다.** `withReuse(true)`는 재사용하지 않고, `@ActiveProfiles`는 정렬하지 않습니다. 이런 결함은 단언의 문제가 아니라 구성의 문제라서, 1편에서 다룬 어떤 질문으로도 잡히지 않습니다.
+**다섯째, 선언이 맞아도 런타임은 다를 수 있고, 그때 예외는 나지 않습니다.** `withReuse(true)`는 재사용하지 않고, `@ActiveProfiles`는 정렬하지 않습니다. 이런 결함은 단언의 문제가 아니라 구성의 문제입니다. 구성 자체를 단언하는 테스트가 있으면 일부는 걸리지만, 증상이 비용이나 인프라 오류로만 나타나는 나머지는 그마저도 비껴갑니다.
 
 **여섯째, 캐시를 논하기 전에 캐시의 경계를 먼저 확인해야 합니다.** 컨텍스트 캐시는 JVM의 `static` 변수입니다. 빌드가 40개로 갈라진 저장소에서 "전체 몇 건"이라는 숫자는 처음부터 의미가 없었습니다.
-
-## 규칙이 어디서 왔는가
-
-세 기준에는 각각 그것을 만든 실제 클래스와 실측 날짜가 붙어 있습니다. 회의실에서 나온 규칙이 아니라는 뜻이에요. **규칙은 위에서 내려오지 않고 깨진 자리에서 자랍니다.**
-
-그래서 규칙을 적는 시점도 함께 정해집니다. 그날의 커밋 하나가 코드와 규칙 문서를 같은 PR에서 고치면서 이유를 적었습니다.
-
-> 코드만 고치면 다음에 같은 판단을 처음부터 다시 하게 되므로, 이번에 확정한 규약을 스킬 문서에 남긴다.
-
-깨진 자리에서 규칙이 자라려면 깨진 그 자리에서 적어야 합니다. 하루만 지나도 왜 그렇게 판단했는지가 흐려지고, 남는 것은 결론뿐입니다.
 
 ## 컨텍스트를 띄우기 전에 물어볼 것
 
@@ -622,6 +609,8 @@ public final class OracleTestContainer {
 [^skill]: 이 스킬 파일은 사내 문서가 아니라 필자가 GitHub 마켓플레이스로 배포하는 공개 하네스 플러그인의 일부라 원문을 그대로 옮긴다. `sr-harness` 0.23.0의 `skills/dev-testing-strategy/SKILL.md`다. `:19` "아래 세 신호 중 **하나라도 해당하면** `ApplicationContextRunner`(프로그래밍 방식). 셋 다 아니면 `@ExtendWith(SpringExtension.class)` + `@ContextConfiguration`/`@SpringBootTest(classes=...)` + `@Autowired`로 클래스당 컨텍스트 하나만 띄운다." `:21` 신호 1은 "프로퍼티 조합이 테스트 메서드마다 다르다", `:22` 신호 2는 "`AutoConfigurations.of(...)`로 여러 자동설정을 조합한다"이며 "특히 `BeanPostProcessor`를 등록하는 자동설정이 얽히면 조용히 깨진다(컴파일도 되고 다른 단언도 다 통과하는데 특정 값 하나만 예상과 달라지는 식이라 알아채기 어렵다)"가 붙어 있다. `:23` 신호 3은 "컨텍스트 구조 자체가 단언 대상이다"다. `:34` "**주의**: 신호 1(프로퍼티 공유 여부)만 기계적으로 확인하고 판단하지 않는다. 프로퍼티는 완전히 고정 공유하는데 신호 3에 걸려 있는 테스트를 신호 1만 보고 `@Autowired`로 옮기면 조용히 잘못된 선택이 된다." 이 공개 스킬은 사내 문서보다 하루 늦은 2026-08-10에 추가됐다(커밋 `b6e270e`). 출처: [SeokRae/sr-harness](https://github.com/SeokRae/sr-harness)
 [^caching]: Spring Framework Reference, "Context Caching". 캐시 키를 이루는 파라미터를 열 개로 나열한다. `locations`, `classes`, `contextInitializerClasses`, `contextCustomizers`, `contextLoader`, `parent`, `activeProfiles`, `propertySourceDescriptors`, `propertySourceProperties`, `resourceBasePath`. `contextCustomizers` 항목에는 "this includes `@DynamicPropertySource` methods, bean overrides (such as `@TestBean`, `@MockitoBean`, `@MockitoSpyBean` etc.), as well as various features from Spring Boot's testing support"라는 설명이 붙는다. 캐시 크기: "The size of the context cache is bounded with a default maximum size of 32. Whenever the maximum size is reached, a least recently used (LRU) eviction policy is used to evict and close stale contexts. You can configure the maximum size from the command line or a build script by setting a JVM system property named `spring.test.context.cache.maxSize`." 캐시 범위: "The Spring TestContext framework stores application contexts in a static cache. This means that the context is literally stored in a `static` variable. In other words, if tests run in separate processes, the static cache is cleared between each test execution, which effectively disables the caching mechanism." 그리고 "To benefit from the caching mechanism, all tests must run within the same process or test suite." 출처: [Spring Framework Reference](https://docs.spring.io/spring-framework/reference/testing/testcontext-framework/ctx-management/caching.html)
 [^mcc]: 로컬 Gradle 캐시의 sources jar를 풀어 `spring-test` 5.3.31(Boot 2.7.18 대응), 6.1.11, 6.2.9(실측 대상 모듈이 실제로 쓰는 버전. 실행 로그에서 확인)를 모두 대조했다. 본문의 `hashCode`는 6.1.11이며, 5.3.31은 `propertySourceDescriptors` 자리가 `Arrays.hashCode(this.propertySourceLocations)`라는 점만 다르고 나머지는 글자까지 같다. **Boot 2.7부터 3.5까지 캐시 키의 구조는 사실상 바뀌지 않았다.** 기본 크기와 축출 정책도 소스에 있다. `ContextCache.java:66,79`의 `int DEFAULT_MAX_CONTEXT_CACHE_SIZE = 32;`와 `String MAX_CONTEXT_CACHE_SIZE_PROPERTY_NAME = "spring.test.context.cache.maxSize";`, 그리고 `DefaultContextCache.java:307`의 `private class LruCache extends LinkedHashMap<MergedContextConfiguration, ApplicationContext>`와 `:320`의 `removeEldestEntry` 오버라이드다. 캐시가 static이라는 것도 `DefaultCacheAwareContextLoaderDelegate.java:68-71`에 `static final ContextCache defaultContextCache = new DefaultContextCache();`로 있다. `processActiveProfiles`는 5.3.31, 6.1.11, 6.2.9 세 버전이 모두 같은 코드다. 문서의 열 개 항목 중 `resourceBasePath`는 `MergedContextConfiguration`의 하위 타입인 `WebMergedContextConfiguration` 소관이라 본문 `hashCode`에는 나타나지 않는다.
+[^lastwins]: Spring Boot Reference, "Externalized Configuration"의 Profile Specific Files 절. "If several profiles are specified, a last-wins strategy applies. For example, if profiles `prod,live` are specified by the `spring.profiles.active` property, values in `application-prod.properties` can be overridden by those in `application-live.properties`." 즉 프로파일 목록의 순서는 프로퍼티 우선순위를 결정하므로, 두 프로파일이 같은 키를 다르게 정의하면 순서에 따라 유효값이 달라진다. 출처: [Spring Boot Reference](https://docs.spring.io/spring-boot/reference/features/external-config.html)
+[^dynprec]: Spring Framework Reference, "Context Configuration with Dynamic Property Sources". "Dynamic properties have higher precedence than those loaded from `@TestPropertySource`, the operating system's environment, Java system properties, or property sources added by the application declaratively by using `@PropertySource` or programmatically. Thus, dynamic properties can be used to selectively override properties loaded via `@TestPropertySource`, system property sources, and application property sources." 출처: [Spring Framework Reference](https://docs.spring.io/spring-framework/reference/testing/testcontext-framework/ctx-management/dynamic-property-sources.html)
 [^mockito]: `spring-boot-test` 2.7.18의 `org/springframework/boot/test/mock/mockito/MockitoContextCustomizer`는 `private final Set<Definition> definitions;`를 갖고 `equals`와 `hashCode`를 모두 `this.definitions` 기준으로 구현한다. `Set`의 `equals`이므로 선언 순서는 키에 영향을 주지 않고, 어떤 타입을 mock하는지의 집합만 본다. 참고로 이 저장소는 `@MockBean` 259건에 `@MockitoBean` 1건으로 대부분 구 애노테이션을 쓴다. 유일한 `@MockitoBean`은 Boot 3.4.x 모듈의 베이스 클래스에 있다. 모듈마다 Spring Boot 버전이 2.7.x부터 3.5.x까지 공존하므로 이 저장소를 하나의 버전으로 서술할 수는 없다.
 [^reuse]: Testcontainers for Java, "Reusable Containers (Experimental)". 문서는 사용 조건을 한 문장에 모아 둔다. "To use it, start the container manually by calling `start()` method, do not call `stop()` method directly or indirectly via `try-with-resources` or `JUnit integration`, and enable it manually through an opt-in mechanism per environment." 즉 컨테이너의 `withReuse(true)` 외에 수동 `start()`, `stop()` 미호출(`try-with-resources`와 JUnit 통합 포함), 환경별 opt-in이 함께 필요하다. 환경별 opt-in은 "Enable `Reusable Containers` through environment variable `TESTCONTAINERS_REUSE_ENABLE=true` through user property file `~/.testcontainers.properties`, by adding `testcontainers.reuse.enable=true`"로 안내된다. CI 부적합은 "Reusable containers are not suited for CI usage and as an experimental feature not all Testcontainers features are fully working (e.g., resource cleanup or networking)."라는 문장의 앞부분이다. 사내 교정 커밋의 서술을 이 문서로 독립 확인했다. 출처: [java.testcontainers.org](https://java.testcontainers.org/features/reuse/)
 [^async]: `@Async`에 이름을 주면 `AsyncExecutionAspectSupport.determineAsyncExecutor`가 `findQualifiedExecutor`로 내려가고, 그것이 `BeanFactoryAnnotationUtils.qualifiedBeanOfType(beanFactory, Executor.class, qualifier)`를 호출한다. 일치하는 빈이 없으면 `NoSuchBeanDefinitionException`을 던진다(`spring-beans` 6.2.9 `BeanFactoryAnnotationUtils.java:137-138`). `findQualifiedExecutor`는 5.3.31과 6.2.9가 같은 코드다. 이름을 **주지 않은** `@Async`는 경로가 다르다. 그쪽은 `AsyncExecutionAspectSupport.getDefaultExecutor`가 로그를 남기며 후보를 찾고, 끝내 못 찾으면 `AsyncExecutionInterceptor.getDefaultExecutor`가 `new SimpleAsyncTaskExecutor()`로 폴백한다(`spring-aop` 6.2.9 `AsyncExecutionAspectSupport.java:238` 이하와 `AsyncExecutionInterceptor.java:158-161`). "지정한 이름을 못 찾으면 경고 후 기본 executor로 폴백한다"는 흔한 서술은 이 두 경로를 섞은 것이다. 그리고 이름을 못 찾는 경우든 찾는 경우든 executor 해석은 `determineAsyncExecutor`가 호출되는 시점, 즉 그 메서드를 실제로 부를 때 일어나므로 컨텍스트 기동은 영향받지 않는다.
