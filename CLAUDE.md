@@ -49,6 +49,8 @@ frontmatter 필드 순서는 `layout → date → title → subtitle → tags`�
 
 GitHub Pages가 main push(= PR merge) 시 네이티브 빌드한다. `.github/workflows/site-check.yml`가 push/PR마다 계약 테스트를 먼저 돌린다. **모든 작업은 예외 없이 Issue → main에서 feature 브랜치 분기 → PR(`Closes #N`) → merge로 진행한다 — 블로그 포스트도 마찬가지다.** merge가 main에 반영되는 순간 Pages 빌드가 트리거되므로 배포는 그대로 동작한다. blog-publisher도 main에 직접 push하지 않고 feature 브랜치 + PR로 발행하며, merge는 사용자가 한다. (2026-07-13 이전엔 "포스트는 main 직접 push" 예외를 뒀으나 사용자 지시로 폐기 — 글로벌 Issue-Driven 규칙을 그대로 따른다.)
 
+**브랜치 이름은 `feature/{issue}-{slug}`로 통일한다.** 커밋 타입(`docs:`, `feat:`, `fix:`)을 브랜치 접두사로 옮기지 않는다. 브랜치는 어느 가지인지만 가리키고, 변경의 성격은 커밋 메시지와 PR 제목이 말한다. 실제로 테스트 기준 시리즈 세 편만 `feat/`와 `docs/`로 갈렸고(#94, #96, #98) 나머지는 전부 `feature/`였다. blog-publisher도 `feature/{issue}-{slug}`로 분기하므로(하네스 `agents/blog-publisher.md`) 하네스와 이 문서가 같은 규칙을 갖는다.
+
 ## 하네스: 블로그 글쓰기 파이프라인
 
 **목표:** 주제 제시부터 윤문·발행까지 인사이트 중심 블로그 포스트 작성 파이프라인을 자동화한다.
@@ -81,3 +83,4 @@ GitHub Pages가 main push(= PR merge) 시 네이티브 빌드한다. `.github/wo
 | 2026-07-18 | flowcast 다이어그램 다크 모드 연동 — 임베드 `<style>`에 `[data-theme="dark"] .flowcast-embed` 오버라이드 추가(원본 예제 `:root` 다크 팔레트·배경 `#0c1524`). figcaption 하드코딩 `#54667e`를 `var(--muted)`로 바꿔 테마 자동 추종, 다크 규칙을 계약 테스트로 잠금 | `_posts/2026-07-15-flowcast-1-why-visual-docs.md`, `test/site_output_test.rb` | #38 다크 모드 후, 색을 CSS 변수로만 갖는 임베드가 라이트 값을 고정해 다크 페이지 위에 라이트 패널로 떠 있었음. 변수 세트만 다크로 전환하면 SVG 전체가 따라옴. 다크 팔레트 AA 계산 확인(accent 8.47:1·muted 7.84:1·line 5.27:1·line-soft 3.08:1) (#40) |
 | 2026-08-09 | 블로그 포스트 문체 규칙 추가 — 습니다체를 기본으로 하고 해요체는 리듬 변주로만 최소 사용(전역 5:5 규칙의 블로그 전용 예외) | `CLAUDE.md` | 사용자가 레이트리미터 포스트 편집 중 "말투를 조금 더 형식적으로 쓰는 게 가독성이 좋을 것 같다"고 피드백, 적용 범위를 블로그 글쓰기 전반으로 확정 |
 | 2026-09-08 | 문단 응집 규칙을 하네스에 추가 (하네스 레포 #1, #3, #5). 배열 네 패턴(연쇄, 정박, 우산, 예고)을 writer 설계와 editor 점검으로 나누고, 소주제 이름을 researcher부터 publisher까지 주고받는 계약으로 만듦. `scripts/cohesion_check.py`가 점검 재료를 뽑고 결과는 리서치 노트의 `## 응집 점검 기록`에 남는다 | `sr-blog-harness` 레포의 `agents/*`, `skills/blog-pipeline/*`, `scripts/cohesion_check.py`, 이 저장소는 `CLAUDE.md`만 | 사용자가 인지 글쓰기 프레임워크를 제시. 기존 규칙(AI 문투 배제, editor 내용 불변, 인사이트 컨셉)과 충돌하는 세 지점을 해소하고, 규칙이 지켜졌는지 확인할 물건이 없던 구멍을 소주제 이름과 점검 기록으로 메움 |
+| 2026-09-08 | 브랜치 이름 규칙을 `feature/{issue}-{slug}`로 명문화. 커밋 타입을 브랜치 접두사로 옮기지 않는다는 것도 함께 적음 | `CLAUDE.md` | 접두사가 `feature/` 9건, `feat/` 2건, `docs/` 1건으로 갈렸음. 규칙은 blog-publisher에 이미 있었으나 이 문서에 없어 이탈이 생김 (#103) |
