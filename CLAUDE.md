@@ -57,6 +57,8 @@ GitHub Pages가 main push(= PR merge) 시 네이티브 빌드한다. `.github/wo
 
 **출처:** 서브 에이전트(`blog-researcher`/`writer`/`verifier`/`editor`/`publisher`)와 `blog-pipeline` 스킬은 이 저장소가 아니라 별도 플러그인 [`SeokRae/sr-blog-harness`](https://github.com/SeokRae/sr-blog-harness)에서 온다 (`~/.claude/settings.json`의 `enabledPlugins`로 전역 활성화). 하네스 자체를 수정하려면 이 저장소가 아니라 그쪽 레포를 고쳐야 한다.
 
+**문단 응집 계약:** 포스트의 문단 배열은 네 패턴(연쇄, 정박, 우산, 예고)을 따르고, writer가 설계하면 editor가 점검한다. 계약을 나르는 물건은 **소주제 이름**이다. researcher가 이름을 짓고, writer가 도입부 예고와 소제목에 쓰면서 초안 하단에 `<!-- 작성자 노트: 소주제 이름 = A | B | C -->`로 남기고, verifier는 그 표기를 보존하고, editor가 대조하고, publisher가 발행 시 제거한다. 사슬이 끊기면 도입부가 예고한 것과 소제목이 다른 글이 나간다. 점검 재료는 하네스의 `scripts/cohesion_check.py`가 뽑고(판정은 하지 않는다), 결과는 리서치 노트의 `## 응집 점검 기록`에 남는다. ⚠️ 예고는 살리되 "3가지를 다룹니다", "첫째/둘째" 같은 개수와 번호 라벨은 쓰지 않는다 (AI 문투이자 목차 나열이다).
+
 **변경 이력:**
 | 날짜 | 변경 내용 | 대상 | 사유 |
 |------|----------|------|------|
@@ -78,3 +80,4 @@ GitHub Pages가 main push(= PR merge) 시 네이티브 빌드한다. `.github/wo
 | 2026-07-18 | flowcast 1편에 실제 산출물 예시(시퀀스 다이어그램) 임베드 — flowcast 합성 예제의 SVG를 추출, 색을 CSS 변수로만 갖는 구조라 라이트 테마 변수값 + 클래스 규칙을 `.flowcast-embed`로 스코프해 인라인. 외부 요청 0 유지, 계약 테스트로 잠금 | `_posts/2026-07-15-flowcast-1-why-visual-docs.md`, `test/site_output_test.rb` | 시각 문서화를 주장하는 글에 그림이 없었음. mermaid CDN은 #24의 외부 요청 0 계약을 깨므로 self-contained 인라인 SVG로 (#36) |
 | 2026-07-18 | flowcast 다이어그램 다크 모드 연동 — 임베드 `<style>`에 `[data-theme="dark"] .flowcast-embed` 오버라이드 추가(원본 예제 `:root` 다크 팔레트·배경 `#0c1524`). figcaption 하드코딩 `#54667e`를 `var(--muted)`로 바꿔 테마 자동 추종, 다크 규칙을 계약 테스트로 잠금 | `_posts/2026-07-15-flowcast-1-why-visual-docs.md`, `test/site_output_test.rb` | #38 다크 모드 후, 색을 CSS 변수로만 갖는 임베드가 라이트 값을 고정해 다크 페이지 위에 라이트 패널로 떠 있었음. 변수 세트만 다크로 전환하면 SVG 전체가 따라옴. 다크 팔레트 AA 계산 확인(accent 8.47:1·muted 7.84:1·line 5.27:1·line-soft 3.08:1) (#40) |
 | 2026-08-09 | 블로그 포스트 문체 규칙 추가 — 습니다체를 기본으로 하고 해요체는 리듬 변주로만 최소 사용(전역 5:5 규칙의 블로그 전용 예외) | `CLAUDE.md` | 사용자가 레이트리미터 포스트 편집 중 "말투를 조금 더 형식적으로 쓰는 게 가독성이 좋을 것 같다"고 피드백, 적용 범위를 블로그 글쓰기 전반으로 확정 |
+| 2026-09-08 | 문단 응집 규칙을 하네스에 추가 (하네스 레포 #1, #3, #5). 배열 네 패턴(연쇄, 정박, 우산, 예고)을 writer 설계와 editor 점검으로 나누고, 소주제 이름을 researcher부터 publisher까지 주고받는 계약으로 만듦. `scripts/cohesion_check.py`가 점검 재료를 뽑고 결과는 리서치 노트의 `## 응집 점검 기록`에 남는다 | `sr-blog-harness` 레포의 `agents/*`, `skills/blog-pipeline/*`, `scripts/cohesion_check.py`, 이 저장소는 `CLAUDE.md`만 | 사용자가 인지 글쓰기 프레임워크를 제시. 기존 규칙(AI 문투 배제, editor 내용 불변, 인사이트 컨셉)과 충돌하는 세 지점을 해소하고, 규칙이 지켜졌는지 확인할 물건이 없던 구멍을 소주제 이름과 점검 기록으로 메움 |
