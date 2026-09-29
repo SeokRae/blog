@@ -14,6 +14,7 @@ class SiteOutputTest < Minitest::Test
       add_pagination_fixture(source)
       add_test_dir_fixture(source)
       add_escaping_fixture(source)
+      add_excerpt_escaping_fixture(source)
 
       destination = File.join(source, "_site")
       stdout, stderr, status = Open3.capture3(
@@ -30,6 +31,8 @@ class SiteOutputTest < Minitest::Test
       search = File.read(File.join(destination, "search.html"))
       sitemap = File.read(File.join(destination, "sitemap.xml"))
       post = File.read(File.join(destination, "2026", "01", "20", "escaping-fixture.html"))
+      excerpt_post = File.read(File.join(destination, "2026", "01", "21", "excerpt-escaping-fixture.html"))
+      excerpt_cut_post = File.read(File.join(destination, "2026", "01", "22", "excerpt-cut-fixture.html"))
       css = File.read(File.join(destination, "assets", "css", "main.css"))
       flowcast_post = File.read(File.join(destination, "2026", "07", "15", "flowcast-1-why-visual-docs.html"))
       rate_limiter_post = File.read(File.join(destination, "2026", "08", "09", "rate-limiter-payment-platform.html"))
@@ -47,6 +50,15 @@ class SiteOutputTest < Minitest::Test
       # 제목의 &와 따옴표가 escape돼야 한다 — 안 그러면 속성이 깨져 미리보기가 잘린다
       assert_includes post, %(<meta property="og:title" content="Tom &amp; Jerry &quot;quoted&quot;">)
       assert_includes post, %(<title>Tom &amp; Jerry &quot;quoted&quot; | SeokRae</title>)
+      # 발췌(첫 문단)는 kramdown이 렌더한 HTML이라 &가 이미 &amp;로 들어 있다. 그대로 escape하면
+      # &amp;amp;가 되고, 엔티티가 살아 있는 채로 truncate하면 &amp;가 중간에서 잘린다. (#118)
+      %w[name="description" property="og:description" name="twitter:description"].each do |attr|
+        assert_includes excerpt_post, %(<meta #{attr} content="Tom &amp; Jerry say a &lt; b done.">)
+        assert_includes excerpt_cut_post, %(<meta #{attr} content="#{"가" * 155}&amp;나...">)
+      end
+      [excerpt_post, excerpt_cut_post].each do |html|
+        refute_match(/&amp;(amp|lt|gt|quot|#\d+);/, html[/<head>.*<\/head>/m], "meta description이 두 번 이스케이프되면 안 된다")
+      end
       refute_includes sitemap, "/blog/search.html"
       refute_includes sitemap, "/blog/tags.html"
       refute_includes about, "background-image: url('/blog/')"
@@ -248,6 +260,21 @@ class SiteOutputTest < Minitest::Test
     File.write(
       File.join(posts, "2026-01-20-escaping-fixture.md"),
       %(---\nlayout: post\ntitle: 'Tom & Jerry "quoted"'\n---\nFixture content.\n)
+    )
+  end
+
+  # 첫 문단에 &나 <가 든 실제 포스트가 없어 발췌 이스케이핑 회귀를 잡을 수 없다. (#118)
+  # cut 픽스처는 &를 155자 뒤에 두어, 인코딩된 채로 자르면 &amp;가 160자 경계에서 잘리게 한다.
+  def add_excerpt_escaping_fixture(source)
+    posts = File.join(source, "_posts")
+    FileUtils.mkdir_p(posts)
+    File.write(
+      File.join(posts, "2026-01-21-excerpt-escaping-fixture.md"),
+      "---\nlayout: post\ntitle: Excerpt Escaping Fixture\n---\nTom & Jerry say `a < b` done.\n"
+    )
+    File.write(
+      File.join(posts, "2026-01-22-excerpt-cut-fixture.md"),
+      "---\nlayout: post\ntitle: Excerpt Cut Fixture\n---\n#{"가" * 155}&#{"나" * 20}\n"
     )
   end
 
