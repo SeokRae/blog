@@ -10,6 +10,92 @@ tags: [AI, Jev, 검증, 아키텍처]
 
 > "Think of Jev as a frontier-intelligence function call: unstructured state in, typed probabilistic decisions out."
 
+<figure class="jev-embed">
+<style>
+.jev-embed{
+  margin:2em 0;padding:1.25em;border:1px solid var(--bd);border-radius:10px;background:var(--bg);color:var(--text);
+  font-family:-apple-system,"Apple SD Gothic Neo","Noto Sans KR","Segoe UI",sans-serif;font-size:0.9em;line-height:1.55;
+  --bg:#f7faf9;--bd:rgba(17,121,100,0.26);--box:#ffffff;--text:#1f2a37;--muted:#56657a;--accent:#117964;
+  --soft:rgba(17,121,100,0.08);--track:rgba(17,121,100,0.14);
+  --mono:ui-monospace,"JetBrains Mono",Menlo,monospace;
+}
+[data-theme="dark"] .jev-embed{
+  --bg:#131a28;--bd:rgba(77,182,160,0.30);--box:#1b2130;--text:#c9d3e0;--muted:#8b98a9;--accent:#4db6a0;
+  --soft:rgba(77,182,160,0.12);--track:rgba(77,182,160,0.20);
+}
+.jev-embed .jev-flow{display:grid;grid-template-columns:1.15fr 1.4em 0.8fr 1.4em 1.05fr;gap:0.5em;align-items:stretch;}
+.jev-embed .jev-box{background:var(--box);border:1px solid var(--bd);border-radius:8px;padding:0.85em 0.95em;min-width:0;}
+.jev-embed .jev-model{background:var(--soft);display:flex;flex-direction:column;justify-content:center;text-align:center;}
+.jev-embed .jev-label{margin:0 0 0.55em;font-size:0.82em;font-weight:700;color:var(--accent);}
+.jev-embed .jev-name{margin:0 0 0.3em;font-size:1.6em;font-weight:800;color:var(--accent);line-height:1.2;}
+.jev-embed p{margin:0 0 0.35em;}
+.jev-embed code{font-family:var(--mono);font-size:0.9em;background:none;padding:0;margin:0;color:var(--text);}
+.jev-embed .jev-key{color:var(--accent);font-weight:700;}
+.jev-embed .jev-note{color:var(--muted);font-size:0.86em;}
+.jev-embed .jev-val{display:block;margin:0.15em 0 0.6em;padding:0.3em 0.55em;border-left:3px solid var(--bd);font-family:var(--mono);font-size:0.84em;overflow-wrap:anywhere;}
+.jev-embed .jev-chips{display:flex;flex-wrap:wrap;gap:0.3em;margin:0.2em 0 0.45em;padding:0;list-style:none;}
+.jev-embed .jev-chips li{margin:0;border:1px solid var(--bd);border-radius:999px;padding:0 0.6em;font-family:var(--mono);font-size:0.82em;}
+.jev-embed .jev-arrow{display:flex;align-items:center;justify-content:center;color:var(--accent);font-size:1.3em;font-weight:700;}
+.jev-embed .jev-bars{margin:0.3em 0 0.6em;padding:0;list-style:none;}
+.jev-embed .jev-bars li{display:grid;grid-template-columns:5.6em 1fr 3em;gap:0.45em;align-items:center;margin:0.2em 0;font-family:var(--mono);font-size:0.82em;}
+.jev-embed .jev-track{height:0.6em;border-radius:3px;background:var(--track);overflow:hidden;}
+.jev-embed .jev-fill{display:block;height:100%;background:var(--accent);}
+.jev-embed .jev-num{text-align:right;white-space:nowrap;}
+.jev-embed .jev-down{text-align:center;color:var(--accent);font-size:1.3em;font-weight:700;line-height:1;margin:0.35em 0;}
+.jev-embed .jev-code{background:var(--box);border:1px dashed var(--bd);border-radius:8px;padding:0.85em 0.95em;}
+.jev-embed .jev-branch{display:grid;grid-template-columns:auto 1fr;gap:0.2em 0.9em;margin:0.1em 0 0.5em;}
+.jev-embed figcaption{margin-top:0.9em;color:var(--muted);font-size:0.9em;text-align:center;}
+@media (max-width:640px){
+  .jev-embed .jev-flow{grid-template-columns:1fr;}
+  .jev-embed .jev-arrow{transform:rotate(90deg);height:1.4em;}
+  .jev-embed .jev-branch{grid-template-columns:1fr;}
+  .jev-embed .jev-branch span{padding-left:1.2em;margin-bottom:0.3em;}
+}
+</style>
+<div class="jev-flow">
+  <div class="jev-box">
+    <p class="jev-label">요청: 호출하는 쪽이 정한다</p>
+    <p><code class="jev-key">state</code> <span class="jev-note">프로그램 상태, 텍스트만</span></p>
+    <code class="jev-val">"Help! My payouts have been failing for 3 days."</code>
+    <p><code class="jev-key">questions.department</code> <span class="jev-note">이름 붙인 질문</span></p>
+    <code class="jev-val">"Which team should handle this?"</code>
+    <p class="jev-note">답의 후보(<code>criteria</code>)도 미리 적어 보낸다</p>
+    <ul class="jev-chips"><li>billing</li><li>technical</li><li>sales</li></ul>
+    <p class="jev-note"><code>POST /v1/systemone</code></p>
+  </div>
+  <div class="jev-arrow" aria-hidden="true">→</div>
+  <div class="jev-box jev-model">
+    <p class="jev-label">모델</p>
+    <p class="jev-name">Jev</p>
+    <p>적어 보낸 후보 안에서<br>판단하고 확률을 매긴다</p>
+    <p class="jev-note">문장을 만들지 않는다<br>다음 행동을 고르지 않는다</p>
+  </div>
+  <div class="jev-arrow" aria-hidden="true">→</div>
+  <div class="jev-box">
+    <p class="jev-label">응답: 질문마다 하나</p>
+    <p><code class="jev-key">choice</code> <code>"billing"</code></p>
+    <p><code class="jev-key">probabilities</code></p>
+    <ul class="jev-bars">
+      <li><span>billing</span><span class="jev-track"><span class="jev-fill" style="width:88%"></span></span><span class="jev-num">0.88</span></li>
+      <li><span>technical</span><span class="jev-track"><span class="jev-fill" style="width:12%"></span></span><span class="jev-num">0.12</span></li>
+      <li><span>sales</span><span class="jev-track"><span class="jev-fill" style="width:0%"></span></span><span class="jev-num">0.0</span></li>
+    </ul>
+    <p><code class="jev-key">confidence</code> <code>0.81</code> <span class="jev-note">분포에서 계산한 값</span></p>
+    <p><code class="jev-key">model</code> <code>"jev-1.13.0"</code> <span class="jev-note">실제로 답한 버전</span></p>
+  </div>
+</div>
+<div class="jev-down" aria-hidden="true">↓</div>
+<div class="jev-code">
+  <p class="jev-label">그다음은 호출하는 쪽 코드가 정한다</p>
+  <div class="jev-branch">
+    <code>if confidence &gt; x:</code><span>이 판단대로 처리한다</span>
+    <code>else:</code><span>사람이나 추론 모델에게 넘긴다</span>
+  </div>
+  <p class="jev-note">문턱 <code>x</code>를 얼마로 둘지, 그 값이 맞는지 무엇으로 잴지, 무엇을 실행할지는 모델 밖에 있다</p>
+</div>
+<figcaption>Jev 호출 한 번의 모양. Choice 질문 하나를 보낸 TypeSafe API 문서의 예시로, 요청과 응답 값은 원문 그대로입니다. 답의 후보도, 확신도를 받아 무엇을 할지도 호출하는 쪽이 정합니다.</figcaption>
+</figure>
+
 먼저 이 글의 성격을 밝혀 둡니다. **저는 Jev를 직접 호출해 보지 않았습니다.** 발표문 기준으로 공식 경로는 대기자 명단을 거치는 얼리 액세스입니다. 이 글은 발표 13일 뒤인 2026-09-28에 회사 블로그와 API 문서, 그리고 제3자가 공개한 측정 저장소 몇 개를 읽은 기록입니다. 그래서 본문의 수치에는 누가, 어떤 조건에서 낸 주장이나 측정인지를 전부 붙여 둡니다.
 
 > 이 글은 속도와 가격을 다루지 않습니다. 응답 속도 하나만 해도 출처마다 수치가 다릅니다. 회사 블로그의 비교표는 "End-to-end response time is 70ms-500ms for TypeSafe", 보도자료는 "less than 100 milliseconds of latency",[^pr] 개발 문서는 "Most queries complete in about 100 ms."라고 적었습니다.[^howto] 제3자 측정인 priorbench는 OpenRouter를 거쳐 서유럽에서 잰 값으로 "~430 ms floor"를 보고했습니다.[^priorbench] 벤더 스스로도 자기 측정이 "generally run from our laptops on the West Coast"라고 조건을 밝혀 두었어요. 호출 경로와 위치가 다른 수치는 한 줄에 세울 수 없습니다. 이 글이 보려는 것은 속도가 아니라, 돌려받은 값을 코드가 어떻게 다뤄야 하는가입니다.
