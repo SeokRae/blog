@@ -14,6 +14,7 @@ class SiteOutputTest < Minitest::Test
       add_pagination_fixture(source)
       add_test_dir_fixture(source)
       add_escaping_fixture(source)
+      add_reading_time_fixture(source)
 
       destination = File.join(source, "_site")
       stdout, stderr, status = Open3.capture3(
@@ -30,6 +31,7 @@ class SiteOutputTest < Minitest::Test
       search = File.read(File.join(destination, "search.html"))
       sitemap = File.read(File.join(destination, "sitemap.xml"))
       post = File.read(File.join(destination, "2026", "01", "20", "escaping-fixture.html"))
+      reading_post = File.read(File.join(destination, "2026", "01", "23", "reading-time-fixture.html"))
       css = File.read(File.join(destination, "assets", "css", "main.css"))
       flowcast_post = File.read(File.join(destination, "2026", "07", "15", "flowcast-1-why-visual-docs.html"))
       rate_limiter_post = File.read(File.join(destination, "2026", "08", "09", "rate-limiter-payment-platform.html"))
@@ -47,6 +49,13 @@ class SiteOutputTest < Minitest::Test
       # 제목의 &와 따옴표가 escape돼야 한다 — 안 그러면 속성이 깨져 미리보기가 잘린다
       assert_includes post, %(<meta property="og:title" content="Tom &amp; Jerry &quot;quoted&quot;">)
       assert_includes post, %(<title>Tom &amp; Jerry &quot;quoted&quot; | SeokRae</title>)
+      # 읽기 시간은 각주를 떼고 태그와 공백을 뺀 글자를 500자당 1분으로 센다. 픽스처는 공백을 뺀
+      # 본문 1,001자(각주 번호 1자 포함)에 공백 200개와 긴 각주를 붙였다. 옛 공식이면 7분이 넘는다. (#117)
+      assert_match(/· 3분 읽기/, reading_post, "공백과 각주는 읽기 시간에 넣지 않는다")
+      %w[_layouts/post.html _layouts/home.html].each do |layout|
+        assert_includes File.read(File.join(ROOT, layout)), "include reading_time.html",
+          "#{layout}는 읽기 시간을 공용 include로 계산해야 한다"
+      end
       refute_includes sitemap, "/blog/search.html"
       refute_includes sitemap, "/blog/tags.html"
       refute_includes about, "background-image: url('/blog/')"
@@ -248,6 +257,16 @@ class SiteOutputTest < Minitest::Test
     File.write(
       File.join(posts, "2026-01-20-escaping-fixture.md"),
       %(---\nlayout: post\ntitle: 'Tom & Jerry "quoted"'\n---\nFixture content.\n)
+    )
+  end
+
+  def add_reading_time_fixture(source)
+    posts = File.join(source, "_posts")
+    FileUtils.mkdir_p(posts)
+    body = "가나다라마 " * 200
+    File.write(
+      File.join(posts, "2026-01-23-reading-time-fixture.md"),
+      "---\nlayout: post\ntitle: Reading Time Fixture\n---\n#{body}[^1]\n\n[^1]: #{"각주" * 1000}\n"
     )
   end
 
