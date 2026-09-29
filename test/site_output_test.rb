@@ -33,6 +33,7 @@ class SiteOutputTest < Minitest::Test
       css = File.read(File.join(destination, "assets", "css", "main.css"))
       flowcast_post = File.read(File.join(destination, "2026", "07", "15", "flowcast-1-why-visual-docs.html"))
       rate_limiter_post = File.read(File.join(destination, "2026", "08", "09", "rate-limiter-payment-platform.html"))
+      jev_post = File.read(File.join(destination, "2026", "09", "29", "jev-system-one-model.html"))
 
       assert_match(/<html[^>]+lang="ko"/, index)
       assert_match(%r{<link rel="canonical" href="https://seokrae\.github\.io/blog/">}, index)
@@ -102,6 +103,18 @@ class SiteOutputTest < Minitest::Test
         "알고리즘 애니메이션이 외부 스타일시트를 끌어오면 안 된다")
       refute_match(%r{<script[^>]*\ssrc="https?://}, rate_limiter_post,
         "알고리즘 애니메이션이 외부 스크립트를 끌어오면 안 된다")
+      # Jev 편 도입부의 호출 개요 그림. 인라인 HTML과 CSS만 쓰고 다크 모드를 따른다.
+      # 요청과 응답 값은 벤더 API 문서 예시의 원문이라 그대로 남아야 한다. (#111)
+      assert_includes jev_post, 'class="jev-embed"', "Jev 호출 개요 그림이 있어야 한다"
+      assert_match(/\[data-theme=("?)dark\1\]\s*\.jev-embed\s*\{/, jev_post,
+        "다크 모드에서 Jev 개요 그림 팔레트를 오버라이드하는 규칙이 있어야 한다")
+      assert_includes jev_post, '"Help! My payouts have been failing for 3 days."',
+        "그림의 state 예시는 API 문서 원문 그대로여야 한다"
+      assert_includes jev_post, '"jev-1.13.0"', "그림의 응답 예시에 실제로 답한 버전이 있어야 한다"
+      refute_match(%r{<link[^>]*rel="stylesheet"[^>]*href="https?://}, jev_post,
+        "Jev 개요 그림이 외부 스타일시트를 끌어오면 안 된다")
+      refute_match(%r{<script[^>]*\ssrc="https?://}, jev_post,
+        "Jev 개요 그림이 외부 스크립트를 끌어오면 안 된다")
       # 표의 "메모리" 열(O(1)/O(n)/O(큐 길이))이 버스트 축과 달리 시각적으로 구분되지
       # 않았다. 패널마다 눈금 5칸짜리 상태 인디케이터를 추가해, O(1)은 고정 1칸, O(n)·
       # O(큐 길이)는 늘고 주는 애니메이션으로 대비시킨다. (#84)

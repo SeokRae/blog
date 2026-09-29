@@ -633,6 +633,14 @@ verifier가 2026-09-28에 초안 `_drafts/jev-system-one-model.md`를 전수 검
 **V-56. 본문에 쓰이지 않은 출처: 검증 대상 아님**
 - The Register(2026-09-23) 인용과 "as little as 150 ms", Archer Hume 글, dev.to 집계, Vercel 설명 페이지(https://vercel.com/i/what-is-jev), Substack 글, 가격($0.042/MTok, 출력 무료), rate limit, 투자 규모는 초안 본문과 각주에 한 건도 없습니다(초안 전문 검색). 본문 `:15`가 "이 글은 속도와 가격을 다루지 않습니다"라고 밝혀 두었습니다. 그래서 원문 대조를 하지 않았고, 노트의 해당 미해결 질문은 미해소로 남깁니다. 발행 전에 이 출처가 본문에 들어오면 새로 검증해야 합니다.
 
+
+**V-57. 발행 후 추가한 개요 그림의 요청과 응답 값: 확정 (#111)**
+- 대상: 발행본 도입부의 `<figure class="jev-embed">`. 본문 문장은 바꾸지 않고 그림만 덧붙였습니다.
+- 대조: 2026-09-29에 https://docs.typesafe.ai/api.md 를 다시 받아 문자 단위로 대조했습니다.
+  - Example request(.md 134~150행 부근): `"state": "Help! My payouts have been failing for 3 days."`, `"model": "jev-latest"`, 질문 이름 `department`, `"type": "choice"`, `"instructions": "Which team should handle this?"`, `criteria` 키 `billing`, `technical`, `sales`. 그림에는 state, 질문 이름, instructions, criteria 키를 옮겼습니다.
+  - Example response(.md 268~281행 부근): `"model": "jev-1.13.0"`, `"choice": "billing"`, `"probabilities": { "billing": 0.88, "technical": 0.12, "sales": 0.0 }`, `"confidence": 0.81`. 그림의 값과 일치합니다. V-8에서 확정한 키와 확률값도 2026-09-28 조회와 같습니다.
+- 그림의 한국어 설명은 이미 검증된 항목에서만 가져왔습니다: 텍스트 입력만 받는다(E-3, `concepts/system-one` .md 16행), 확신도는 분포에서 계산한 값(V-9, `confidence` .md 149행), 응답의 `model`은 실제로 답한 버전(E-3, V-37), 다음 행동을 고르지 않는다(`how-to-build-with-system-one` .md 238행 "It does not generate code or choose its own next action."), 불확실하면 사람이나 추론 모델에게 넘긴다(`concepts/system-one` .md 49행 "a person or a reasoning model").
+- 그림의 `if confidence > x:` / `else:` 분기는 벤더 코드 인용이 아니라 본문 도입부의 "`if confidence > x` 모양의 줄"을 도식으로 옮긴 것입니다. 그래서 원문 인용 표시를 하지 않았습니다.
 ---
 
 ## 응집 점검 기록
