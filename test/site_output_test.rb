@@ -34,6 +34,7 @@ class SiteOutputTest < Minitest::Test
       flowcast_post = File.read(File.join(destination, "2026", "07", "15", "flowcast-1-why-visual-docs.html"))
       rate_limiter_post = File.read(File.join(destination, "2026", "08", "09", "rate-limiter-payment-platform.html"))
       jev_post = File.read(File.join(destination, "2026", "09", "29", "jev-system-one-model.html"))
+      jev_intro_post = File.read(File.join(destination, "2026", "09", "29", "jev-system-one-intro.html"))
 
       assert_match(/<html[^>]+lang="ko"/, index)
       assert_match(%r{<link rel="canonical" href="https://seokrae\.github\.io/blog/">}, index)
@@ -125,6 +126,25 @@ class SiteOutputTest < Minitest::Test
       assert_includes jev_post, 'class="jev-embed jev-split"', "필자가 제안한 분기 그림이 있어야 한다"
       assert_includes jev_post, '<p class="jev-interp">필자 해석</p>',
         "필자가 제안한 분기 그림은 벤더 주장이 아니라 해석이라는 표시를 달아야 한다"
+      # Jev 입문편의 그림 네 장. 인라인 HTML과 CSS만 쓰고 다크 모드를 따른다.
+      # 호출 한 번 그림의 state는 quickstart 문서 원문이라 그대로 남아야 한다. 같은 문자열이
+      # 코드 블록에도 있어서 그림의 span째로 확인한다. (#115)
+      assert_equal 4, jev_intro_post.scan(/<figure class="jvi-embed/).length,
+        "Jev 입문편에는 인터페이스 비교, 호출 한 번, 유형 선택, 보안 워크플로 그림 네 장이 있어야 한다"
+      assert_match(/\[data-theme=("?)dark\1\]\s*\.jvi-embed\s*\{/, jev_intro_post,
+        "다크 모드에서 Jev 입문편 그림 팔레트를 오버라이드하는 규칙이 있어야 한다")
+      assert_includes jev_intro_post,
+        %q{<span class="jvi-quote">"Hi, I've been trying to connect my Stripe account for 3 days and the integration keeps failing. I'm losing sales. Please help ASAP."</span>},
+        "그림의 state 예시는 quickstart 문서 원문 그대로여야 한다"
+      refute_match(%r{<link[^>]*rel="stylesheet"[^>]*href="https?://}, jev_intro_post,
+        "Jev 입문편 그림이 외부 스타일시트를 끌어오면 안 된다")
+      refute_match(%r{<script[^>]*\ssrc="https?://}, jev_intro_post,
+        "Jev 입문편 그림이 외부 스크립트를 끌어오면 안 된다")
+      # 심화편 첫머리는 입문편을 먼저 읽도록 안내한다. 하단 post-nav도 같은 경로를 가리키므로
+      # 경로만이 아니라 본문 안내 링크의 제목까지 확인한다. (#115)
+      assert_includes jev_post,
+        '<a href="/blog/2026/09/29/jev-system-one-intro.html">「답의 모양이 곧 코드의 모양이 되는 모델, Jev」</a>',
+        "Jev 심화편에 입문편 안내 링크가 있어야 한다"
       # 표의 "메모리" 열(O(1)/O(n)/O(큐 길이))이 버스트 축과 달리 시각적으로 구분되지
       # 않았다. 패널마다 눈금 5칸짜리 상태 인디케이터를 추가해, O(1)은 고정 1칸, O(n)·
       # O(큐 길이)는 늘고 주는 애니메이션으로 대비시킨다. (#84)

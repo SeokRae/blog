@@ -96,6 +96,8 @@ tags: [AI, Jev, 검증, 아키텍처]
 <figcaption>Jev 호출 한 번의 모양. Choice 질문 하나를 보낸 TypeSafe API 문서의 예시로, 요청과 응답 값은 원문 그대로입니다. 답의 후보도, 확신도를 받아 무엇을 할지도 호출하는 쪽이 정합니다.</figcaption>
 </figure>
 
+> Jev를 처음 보신다면 입문편 [「답의 모양이 곧 코드의 모양이 되는 모델, Jev」](/blog/2026/09/29/jev-system-one-intro.html)을 먼저 읽기를 권합니다.
+
 먼저 이 글의 성격을 밝혀 둡니다. **저는 Jev를 직접 호출해 보지 않았습니다.** 발표문 기준으로 공식 경로는 대기자 명단을 거치는 얼리 액세스입니다. 이 글은 발표 13일 뒤인 2026-09-28에 회사 블로그와 API 문서, 그리고 제3자가 공개한 측정 저장소 몇 개를 읽은 기록입니다. 그래서 본문의 수치에는 누가, 어떤 조건에서 낸 주장이나 측정인지를 전부 붙여 둡니다.
 
 > 이 글은 속도와 가격을 다루지 않습니다. 응답 속도 하나만 해도 출처마다 수치가 다릅니다. 회사 블로그의 비교표는 "End-to-end response time is 70ms-500ms for TypeSafe", 보도자료는 "less than 100 milliseconds of latency",[^pr] 개발 문서는 "Most queries complete in about 100 ms."라고 적었습니다.[^howto] 제3자 측정인 priorbench는 OpenRouter를 거쳐 서유럽에서 잰 값으로 "~430 ms floor"를 보고했습니다.[^priorbench] 벤더 스스로도 자기 측정이 "generally run from our laptops on the West Coast"라고 조건을 밝혀 두었어요. 호출 경로와 위치가 다른 수치는 한 줄에 세울 수 없습니다. 이 글이 보려는 것은 속도가 아니라, 돌려받은 값을 코드가 어떻게 다뤄야 하는가입니다.
