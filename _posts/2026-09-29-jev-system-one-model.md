@@ -6,6 +6,8 @@ subtitle: "문장 대신 판단을 돌려주는 모델, Jev의 공개 자료 읽
 tags: [AI, Jev, 검증, 아키텍처]
 ---
 
+> Jev를 처음 보신다면 입문편 [「답의 모양이 곧 코드의 모양이 되는 모델, Jev」](/blog/2026/09/29/jev-system-one-intro.html)을 먼저 읽기를 권합니다.
+
 2026-09-15에 TypeSafe AI가 공개한 Jev는 문장을 만들지 않습니다. Jev는 프로그램의 상태(`state`)와 호출하는 쪽이 이름을 붙인 질문들(`questions`)을 받아, 질문마다 구조화된 판단 하나와 확률을 돌려줍니다. 벤더인 TypeSafe AI는 회사 블로그에서 이 모델을 한 줄로 이렇게 소개합니다.[^blog]
 
 > "Think of Jev as a frontier-intelligence function call: unstructured state in, typed probabilistic decisions out."
