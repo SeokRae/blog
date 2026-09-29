@@ -269,6 +269,50 @@ priorbench는 이 문서가 모델을 과소평가한다고 반박했습니다. 
 
 두 문서 모두 확신도가 낮은 쪽은 사람에게 넘깁니다. 확신도 문서는 0.5 미만, 라우팅 문서는 0.6 미만입니다. 갈리는 건 확신도가 높은 쪽입니다. 확신도 문서는 0.9를 넘어도 `confirm_then_execute`, 곧 확인을 거쳐 실행합니다. 라우팅 문서는 0.85를 넘으면 `approve_transfer`를 바로 부르고, 주석이 "Safe to act automatically."라고 적습니다. 2026-09-28에 함께 조회한 같은 회사의 두 문서에서, 되돌리기 어려운 동작 앞에 사람 확인이 남느냐가 문서마다 다릅니다.
 
+<figure class="jev-embed jev-gate">
+<style>
+/* 컨테이너, 상자, 팔레트 기본값은 도입부 그림의 .jev-embed 규칙을 함께 쓴다 */
+.jev-embed{--auto:#b3402a;--auto-bg:#fcebe7;--ask:#8a5a00;--ask-bg:#fdf4e3;--human:#4f5d73;--human-bg:#eef1f5;--exec-bg:#e6f1ee;}
+[data-theme="dark"] .jev-embed{--auto:#ff8a70;--auto-bg:#3a2320;--ask:#e3ad52;--ask-bg:#312817;--human:#a3b0c2;--human-bg:#222a38;--exec-bg:#183331;}
+.jev-embed .jev-lead{margin:0 0 0.9em;text-align:center;font-weight:700;}
+.jev-embed .jev-ladders{display:grid;grid-template-columns:3.2em 1fr 1fr;gap:0.5em 0.7em;align-items:stretch;}
+.jev-embed .jev-doc{align-self:end;font-size:0.82em;font-weight:700;color:var(--accent);text-align:center;overflow-wrap:break-word;}
+.jev-embed .jev-tier{display:flex;align-items:center;justify-content:center;font-size:0.8em;font-weight:700;color:var(--muted);text-align:center;}
+.jev-embed .jev-cell{border:1px solid var(--bd);border-left-width:4px;border-radius:6px;padding:0.55em 0.75em;background:var(--box);min-width:0;}
+.jev-embed .jev-cell.is-exec{border-left-color:var(--accent);background:var(--exec-bg);}
+.jev-embed .jev-cell.is-auto{border-left-color:var(--auto);background:var(--auto-bg);}
+.jev-embed .jev-cell.is-ask{border-left-color:var(--ask);background:var(--ask-bg);}
+.jev-embed .jev-cell.is-human{border-left-color:var(--human);background:var(--human-bg);}
+.jev-embed .jev-cond{display:block;color:var(--muted);font-size:0.84em;}
+.jev-embed .jev-call{display:block;margin:0.1em 0;font-weight:700;overflow-wrap:break-word;}
+/* 좁은 화면에서 식별자가 글자 중간이 아니라 밑줄과 점 뒤에서만 줄바꿈되도록 <wbr>을 넣었다 */
+.jev-embed .jev-tag{display:block;font-size:0.82em;font-weight:700;}
+.jev-embed .is-exec .jev-tag{color:var(--accent);}
+.jev-embed .is-auto .jev-tag{color:var(--auto);}
+.jev-embed .is-ask .jev-tag{color:var(--ask);}
+.jev-embed .is-human .jev-tag{color:var(--human);}
+@media (max-width:640px){
+  .jev-embed .jev-ladders{grid-template-columns:2.4em 1fr 1fr;gap:0.4em;font-size:0.9em;}
+}
+</style>
+<p class="jev-lead"><code>approve_transfer</code>로 분류된 요청이 확신도에 따라 가는 곳</p>
+<div class="jev-ladders">
+  <span class="jev-tier">확신도</span>
+  <p class="jev-doc"><code>confidence</code> 문서</p>
+  <p class="jev-doc"><code>patterns/<wbr>confidence-routing</code> 문서</p>
+  <span class="jev-tier">높음</span>
+  <div class="jev-cell is-exec"><span class="jev-cond"><code>confidence &gt; 0.9</code></span><code class="jev-call">confirm_<wbr>then_<wbr>execute</code><span class="jev-tag">사람 확인 후 실행</span></div>
+  <div class="jev-cell is-auto"><span class="jev-cond"><code>action.<wbr>confidence &gt; 0.85</code></span><code class="jev-call">approve_<wbr>transfer</code><span class="jev-tag">확인 없이 실행</span></div>
+  <span class="jev-tier">중간</span>
+  <div class="jev-cell is-ask"><span class="jev-cond">그 사이</span><code class="jev-call">ask_<wbr>user_<wbr>to_<wbr>confirm</code><span class="jev-tag">사용자에게 확인</span></div>
+  <div class="jev-cell is-ask"><span class="jev-cond">그 사이</span><code class="jev-call">ask_<wbr>user_<wbr>to_<wbr>confirm</code><span class="jev-tag">사용자에게 확인</span></div>
+  <span class="jev-tier">낮음</span>
+  <div class="jev-cell is-human"><span class="jev-cond"><code>confidence &lt; 0.5</code></span><code class="jev-call">route_<wbr>to_<wbr>human</code><span class="jev-tag">사람에게 넘김</span></div>
+  <div class="jev-cell is-human"><span class="jev-cond"><code>action.<wbr>confidence &lt; 0.6</code></span><code class="jev-call">route_<wbr>to_<wbr>support_<wbr>agent</code><span class="jev-tag">상담원에게 넘김</span></div>
+</div>
+<figcaption>두 문서의 코드 예제에서 조건식과 호출 함수 이름을 원문 그대로 옮겼습니다. 낮은 쪽과 중간은 같고, 확신도가 높은 쪽에서 사람 확인이 남느냐만 갈립니다.</figcaption>
+</figure>
+
 0.85와 0.9의 차이가 실제로 무엇을 가르는지에 대한 측정은 벤더 쪽 자료에서 찾지 못했습니다. 참고할 수 있는 건 priorbench의 단일 측정 하나입니다.
 
 > "**Gate at 0.99 or not at all.** Accuracy above threshold is flat from 0.50 to 0.95, then jumps to **100 % at 0.99, covering 60.2 % of traffic**."
@@ -286,6 +330,52 @@ priorbench는 이 문서가 모델을 과소평가한다고 반박했습니다. 
 사람 확인이 있는가로 표현하는 방식이라면, 다음 버전에서 확신도 분포가 달라져도 송금 앞의 사람 확인은 그대로입니다. 임계값의 높이로 표현하는 방식이라면 0.85의 의미가 버전과 함께 움직이고, 그 줄이 사람 확인을 대신하고 있으니 사람 확인의 존재도 함께 움직입니다.
 
 그래서 저라면 이렇게 나눠 쓰겠습니다. 확신도는 되돌릴 수 있는 동작 안에서 **얼마나 자주 사람에게 넘길지**를 정하는 데 쓰고, 사람 확인이 **있는지**는 되돌릴 수 있는가가 정합니다. 앞의 것은 모델이 바뀌면 다시 재는 값이고, 뒤의 것은 모델이 바뀌어도 그대로인 선입니다.
+
+<figure class="jev-embed jev-split">
+<style>
+/* 컨테이너, 상자, 팔레트는 도입부 그림과 송금 분기 그림의 .jev-embed 규칙을 함께 쓴다 */
+.jev-embed .jev-interp{display:inline-block;margin:0 0 0.8em;padding:0.1em 0.65em;border:1px solid var(--bd);border-radius:999px;font-size:0.8em;font-weight:700;color:var(--muted);}
+.jev-embed .jev-node{margin:0 auto;max-width:26em;background:var(--box);border:1px solid var(--bd);border-radius:8px;padding:0.6em 0.9em;text-align:center;}
+.jev-embed .jev-node.jev-ask{border:2px solid var(--accent);}
+.jev-embed .jev-q{display:block;font-weight:700;}
+.jev-embed .jev-axis{display:block;margin-top:0.2em;color:var(--muted);font-size:0.82em;}
+.jev-embed .jev-forks{display:grid;grid-template-columns:1fr 1fr;gap:0.9em;margin-top:0.2em;}
+.jev-embed .jev-fork{display:flex;flex-direction:column;gap:0.45em;min-width:0;}
+.jev-embed .jev-fork-label{margin:0;text-align:center;font-weight:700;}
+.jev-embed .jev-fork-label .jev-note{display:block;font-weight:400;}
+.jev-embed .jev-pair{display:grid;grid-template-columns:1fr 1fr;gap:0.45em;}
+.jev-embed.jev-split .jev-cell{text-align:center;}
+.jev-embed .jev-cell.is-plain{border-left-color:var(--muted);}
+.jev-embed .jev-decides{margin:0.1em 0 0;padding-top:0.45em;border-top:1px dashed var(--bd);color:var(--muted);font-size:0.86em;text-align:center;}
+.jev-embed .jev-decides strong{color:var(--text);}
+@media (max-width:640px){
+  .jev-embed .jev-forks{grid-template-columns:1fr;}
+}
+</style>
+<p class="jev-interp">필자 해석</p>
+<div class="jev-node"><span class="jev-q">Jev 응답</span><span class="jev-axis"><code>choice</code>와 <code>confidence</code></span></div>
+<div class="jev-down" aria-hidden="true">↓</div>
+<div class="jev-node jev-ask"><span class="jev-q">이 동작은 되돌릴 수 있는가</span><span class="jev-axis">성능 축 밖: 모델이 바뀌어도 그대로인 선</span></div>
+<div class="jev-forks">
+  <div class="jev-fork">
+    <div class="jev-down" aria-hidden="true">↓</div>
+    <p class="jev-fork-label">되돌릴 수 있다<span class="jev-note">예: 잔액 보여 주기 <code>check_balance</code></span></p>
+    <div class="jev-node jev-ask"><span class="jev-q"><code>confidence &gt; x</code></span><span class="jev-axis">성능 축 위: 버전을 고정하고 라벨 데이터로 다시 잰다</span></div>
+    <div class="jev-pair">
+      <div class="jev-cell is-plain"><span class="jev-tag">넘으면 자동 처리</span></div>
+      <div class="jev-cell is-human"><span class="jev-tag">못 넘으면 사람에게</span></div>
+    </div>
+    <p class="jev-decides">확신도가 정하는 것: <strong>얼마나 자주 사람에게 넘길지</strong></p>
+  </div>
+  <div class="jev-fork">
+    <div class="jev-down" aria-hidden="true">↓</div>
+    <p class="jev-fork-label">되돌리기 어렵다<span class="jev-note">예: 송금 승인 <code>approve_transfer</code></span></p>
+    <div class="jev-cell is-exec"><span class="jev-tag">확신도가 높아도<br>사람 확인을 거쳐 실행</span></div>
+    <p class="jev-decides">되돌릴 수 있는가가 정하는 것: <strong>사람 확인이 있는지</strong></p>
+  </div>
+</div>
+<figcaption>필자 해석입니다. 벤더가 이렇게 설명한 적은 없습니다. 확신도 문턱은 모델 버전과 함께 다시 재는 값이라 되돌릴 수 있는 동작 안에만 두고, 사람 확인의 유무는 모델과 무관한 기준에 맡깁니다.</figcaption>
+</figure>
 
 ### 모델에게서 뺀 권한, 한 줄로 돌아오는 권한
 

@@ -115,6 +115,16 @@ class SiteOutputTest < Minitest::Test
         "Jev 개요 그림이 외부 스타일시트를 끌어오면 안 된다")
       refute_match(%r{<script[^>]*\ssrc="https?://}, jev_post,
         "Jev 개요 그림이 외부 스크립트를 끌어오면 안 된다")
+      # 핵심 프로세스 그림 두 장. 벤더 문서의 분기(사실)는 높은 확신도에서 사람 확인이 갈리는
+      # 대비를, 필자가 제안한 분기(해석)는 해석 표시를 잃으면 안 된다. (#113)
+      assert_equal 3, jev_post.scan(/<figure class="jev-embed/).length,
+        "Jev 편에는 개요, 벤더 분기, 필자 분기 그림 세 장이 있어야 한다"
+      assert_includes jev_post, 'class="jev-embed jev-gate"', "벤더 문서의 확신도 분기 그림이 있어야 한다"
+      assert_includes jev_post, "사람 확인 후 실행", "벤더 분기 그림에 confidence 문서의 높은 확신도 분기가 있어야 한다"
+      assert_includes jev_post, "확인 없이 실행", "벤더 분기 그림에 routing 문서의 높은 확신도 분기가 있어야 한다"
+      assert_includes jev_post, 'class="jev-embed jev-split"', "필자가 제안한 분기 그림이 있어야 한다"
+      assert_includes jev_post, '<p class="jev-interp">필자 해석</p>',
+        "필자가 제안한 분기 그림은 벤더 주장이 아니라 해석이라는 표시를 달아야 한다"
       # 표의 "메모리" 열(O(1)/O(n)/O(큐 길이))이 버스트 축과 달리 시각적으로 구분되지
       # 않았다. 패널마다 눈금 5칸짜리 상태 인디케이터를 추가해, O(1)은 고정 1칸, O(n)·
       # O(큐 길이)는 늘고 주는 애니메이션으로 대비시킨다. (#84)

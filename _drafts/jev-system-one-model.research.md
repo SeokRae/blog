@@ -641,6 +641,15 @@ verifier가 2026-09-28에 초안 `_drafts/jev-system-one-model.md`를 전수 검
   - Example response(.md 268~281행 부근): `"model": "jev-1.13.0"`, `"choice": "billing"`, `"probabilities": { "billing": 0.88, "technical": 0.12, "sales": 0.0 }`, `"confidence": 0.81`. 그림의 값과 일치합니다. V-8에서 확정한 키와 확률값도 2026-09-28 조회와 같습니다.
 - 그림의 한국어 설명은 이미 검증된 항목에서만 가져왔습니다: 텍스트 입력만 받는다(E-3, `concepts/system-one` .md 16행), 확신도는 분포에서 계산한 값(V-9, `confidence` .md 149행), 응답의 `model`은 실제로 답한 버전(E-3, V-37), 다음 행동을 고르지 않는다(`how-to-build-with-system-one` .md 238행 "It does not generate code or choose its own next action."), 불확실하면 사람이나 추론 모델에게 넘긴다(`concepts/system-one` .md 49행 "a person or a reasoning model").
 - 그림의 `if confidence > x:` / `else:` 분기는 벤더 코드 인용이 아니라 본문 도입부의 "`if confidence > x` 모양의 줄"을 도식으로 옮긴 것입니다. 그래서 원문 인용 표시를 하지 않았습니다.
+
+**V-58. 발행 후 추가한 확신도 분기 그림 두 장: 벤더 분기는 확정, 필자 분기는 해석 (#113)**
+- 벤더 분기 그림(`<figure class="jev-embed jev-gate">`, "같은 송금, 다른 결론" 절): 2026-09-29에 https://docs.typesafe.ai/confidence.md 와 https://docs.typesafe.ai/patterns/confidence-routing.md 를 다시 받아 대조했습니다. 줄 번호는 V-47과 같습니다.
+  - `confidence` 문서: 199행 `if confidence < 0.5:`, 201행 `route_to_human(user_message)`, 208행 `if confidence > 0.9:`, 210행 `confirm_then_execute(account_id)`, 212~213행 `else:` 다음 `ask_user_to_confirm(account_id)`. 0.5 미만 판정은 동작 분기보다 먼저 오므로 `approve_transfer`로 분류된 요청에도 적용됩니다.
+  - `patterns/confidence-routing` 문서: 287행 `if action.confidence < 0.6:`, 288행 `route_to_support_agent(account_id)`, 295행 `if action.confidence > 0.85:`, 297행 `approve_transfer(account_id)`, 299~300행 `else:` 다음 `ask_user_to_confirm(...)`.
+  - 그림은 조건식 전체와 함수 이름만 옮기고 인자는 싣지 않았습니다. 인자를 줄여 싣지 않으려는 선택입니다. 중간 구간은 코드의 `else:`를 "그 사이"로 적었습니다. 좁은 화면 줄바꿈용 `<wbr>`은 보이지 않는 표시라 글자는 원문과 같습니다.
+  - 칸 아래 한국어 꼬리표(사람 확인 후 실행, 확인 없이 실행, 사용자에게 확인, 사람에게 넘김, 상담원에게 넘김)는 함수 이름과 각 분기 주석("Proceed with confirmation.", "Safe to act automatically.", "Verify first."와 "Verify intent first.", "route to a human")을 풀어 쓴 것입니다.
+- 필자 분기 그림(`<figure class="jev-embed jev-split">`, "성능 축 위의 선과 밖의 선" 절 끝): 새 사실이 없는 해석 도식입니다. 본문 "성능 축 위의 선과 밖의 선" 절의 "그래서 저라면 이렇게 나눠 쓰겠습니다" 문단(그림 삽입 전 `:202`) 중 "확신도는 되돌릴 수 있는 동작 안에서 얼마나 자주 사람에게 넘길지를 정하는 데 쓰고, 사람 확인이 있는지는 되돌릴 수 있는가가 정합니다."를 옮겼고, 그림 머리("필자 해석")와 캡션 양쪽에 해석이라고 밝혔습니다.
+  - 예시 두 개는 벤더 문서의 분류를 따랐습니다. `check_balance`는 confidence 문서 204행 주석 "# Low stakes. Showing the wrong screen is recoverable."이 되돌릴 수 있다고 적은 동작이고, `approve_transfer`는 두 문서 모두 "High stakes"로 적은 동작입니다.
 ---
 
 ## 응집 점검 기록
