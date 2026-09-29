@@ -1,0 +1,9 @@
+{%- comment -%}
+읽기 시간(분). post.html과 home.html이 같이 쓴다. (#117)
+본문에서 kramdown 각주(div.footnotes)부터 뒤를 떼고, 태그와 공백을 뺀 글자를 500자당 1분으로 센다.
+공백과 각주까지 세면 실제로 읽는 양보다 크게 부풀었다. 그림과 코드는 읽는 데 시간이 들어 그대로 센다.
+strip_html은 <style>과 <script> 블록을 지우므로 그림의 인라인 CSS는 원래 세지 않는다.
+{%- endcomment -%}
+{%- assign rt_body = include.content | split: '<div class="footnotes"' | first -%}
+{%- assign rt_chars = rt_body | strip_html | strip_newlines | remove: ' ' | remove: '	' | size -%}
+{{- rt_chars | divided_by: 500 | plus: 1 -}}

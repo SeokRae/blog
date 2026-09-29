@@ -19,15 +19,17 @@ node test/search_test.js                    # 검색 매칭 계약 검증 (CI와
 
 테마는 `_config.yml`의 `remote_theme`로 **커밋 고정**된 Type Theme다 (재현 가능한 빌드). 저장소의 파일은 같은 경로의 테마 파일을 **shadow**하고, 없는 파일은 고정된 원격 테마로 fall-through한다.
 
-- **로컬 오버라이드 (이 저장소에 있음)**: `_layouts/{default,page,post}.html`, `_includes/{head,header,icons}.html`, `assets/css/main.scss`(`type-theme` import 후 a11y·아이콘 규칙만 추가), `assets/js/search.js`, 페이지 파일(`index.html`·`about.md`·`search.html`·`tags.html`·`404.md`).
+- **로컬 오버라이드 (이 저장소에 있음)**: `_layouts/{default,home,page,post}.html`, `_includes/{head,header,icons,reading_time}.html`, `assets/css/main.scss`(`type-theme` import 후 a11y·아이콘 규칙만 추가), `assets/js/search.js`, 페이지 파일(`index.html`·`about.md`·`search.html`·`tags.html`·`404.md`).
 - **루트 `sw.min.js`**: Type Theme와 무관한 tombstone 서비스 워커다. Chirpy(PWA) 시절 `/blog/sw.min.js`에 등록된 워커가 브라우저에 유령으로 남아 옛 캐시(포스트 없는 홈)를 계속 내주는 걸 자폭시킨다 (#34). **삭제 금지** — 지우면 영향받은 브라우저가 영구히 갇힌다. 정적 패스스루이므로 frontmatter 없이 그대로 `/blog/sw.min.js`로 발행된다.
-- **테마 상속 (저장소에 없음 — 여기서 찾지 말 것)**: `_layouts/{home,tags}.html`, `_includes/{footer,tags_list,post_nav,disqus}.html`, `_sass/type-theme.scss`.
+- **테마 상속 (저장소에 없음 — 여기서 찾지 말 것)**: `_layouts/tags.html`, `_includes/{footer,tags_list,post_nav,disqus}.html`, `_sass/type-theme.scss`.
 
 오버라이드는 특정 계약을 고치려고 존재한다 — 한국어 `lang`, 절대 canonical URL, escape된 description meta, 링크 공유용 OG/Twitter 메타, 접근 가능한 검색(`aria-label`), 검색 URL 이중 슬래시 방지, `/blog/page2/` 페이지네이션 경로, **외부 요청 없는 페이지**(스크립트·스타일시트 모두), **WCAG AA 색 대비**. 이 계약들은 **`test/site_output_test.rb`에 잠겨 있다.** 오버라이드를 수정하면 계약 assertion이 깨질 수 있으니 반드시 테스트를 돌린다.
 
 `_config.yml`의 `exclude`는 **이 저장소의 파일에만 먹고 테마 fall-through 파일에는 안 먹는다** (실험으로 확인). 그래서 미사용 테마 에셋(`sample_feature_img*.png`·`avatar.png`·`katex_init.js`, 합 168KB)이 발행되지만 **어떤 페이지도 참조하지 않아 실사용 영향이 없다.** 빈 파일로 shadow하면 0바이트로 줄일 수는 있으나, 저장소에 설명 불가능한 빈 파일이 남아 문제보다 해법이 나쁘다 — 그대로 둔다 (#32).
 
 `_includes/icons.html`은 **쓰는 아이콘만** 인라인 SVG로 담는다 — 테마 원본은 20여 개 소셜 서비스를 FontAwesome으로 분기하는데, 그 55KB를 아이콘 3개 때문에 받고 있었다 (#24). ⚠️ `_config.yml`에서 여기 없는 서비스(twitter 등)를 켜도 렌더되지 않으니 아이콘을 함께 추가해야 한다.
+
+`_includes/reading_time.html`은 `post.html`과 `home.html`이 같이 쓰는 읽기 시간 계산이다. 각주(`div.footnotes`)부터 뒤를 떼고 태그와 공백을 뺀 글자를 500자당 1분으로 센다. 두 레이아웃에 공식을 따로 두면 포스트 머리와 홈 목록의 표기가 갈라지니 여기만 고친다 (#117).
 
 `assets/css/main.scss`는 `@import "type-theme"` **전에** `$link-color`·`$search-color`·`$tags-color`를 재정의한다 — 테마 기본값이 WCAG AA 대비에 미달하고, `!default` 변수라 import 전이 정석이다. 값이 박힌 rouge 색은 import 후 규칙으로 덮는다 (#26).
 
@@ -85,3 +87,4 @@ GitHub Pages가 main push(= PR merge) 시 네이티브 빌드한다. `.github/wo
 | 2026-09-08 | 문단 응집 규칙을 하네스에 추가 (하네스 레포 #1, #3, #5). 배열 네 패턴(연쇄, 정박, 우산, 예고)을 writer 설계와 editor 점검으로 나누고, 소주제 이름을 researcher부터 publisher까지 주고받는 계약으로 만듦. `scripts/cohesion_check.py`가 점검 재료를 뽑고 결과는 리서치 노트의 `## 응집 점검 기록`에 남는다 | `sr-blog-harness` 레포의 `agents/*`, `skills/blog-pipeline/*`, `scripts/cohesion_check.py`, 이 저장소는 `CLAUDE.md`만 | 사용자가 인지 글쓰기 프레임워크를 제시. 기존 규칙(AI 문투 배제, editor 내용 불변, 인사이트 컨셉)과 충돌하는 세 지점을 해소하고, 규칙이 지켜졌는지 확인할 물건이 없던 구멍을 소주제 이름과 점검 기록으로 메움 |
 | 2026-09-08 | 레이트리미터 편의 리서치 노트를 익명화 분리해 추적. 검증 기록(V-1~V-22)만 `.research.md`로 남기고, 사내 경로와 클래스명이 든 원본은 `.sources-internal.md`로 분리(후자는 `_drafts/*` 규칙에 걸려 무시된다). 사내 코드 원문 인용 두 곳도 구조 서술로 대체 | `_drafts/rate-limiter-payment-platform.research.md` 추가, 원본은 `.sources-internal.md`로 이동 | 발행본 8편 중 이 한 편만 노트가 저장소에 없어 각주 14개의 근거를 되짚을 수 없었음(#16 계약 위반). 노트에 사내 정보가 섞여 올릴 수 없던 상태였고, 익명화 분리 규약은 발행 이틀 뒤인 2026-08-11에 확정돼 test-standards 편부터 적용됐음 (#101) |
 | 2026-09-08 | 브랜치 이름 규칙을 `feature/{issue}-{slug}`로 명문화. 커밋 타입을 브랜치 접두사로 옮기지 않는다는 것도 함께 적음 | `CLAUDE.md` | 접두사가 `feature/` 9건, `feat/` 2건, `docs/` 1건으로 갈렸음. 규칙은 blog-publisher에 이미 있었으나 이 문서에 없어 이탈이 생김 (#103) |
+| 2026-09-29 | 읽기 시간 계산을 `_includes/reading_time.html` 하나로 모으고 공백과 각주를 빼고 세도록 변경. 아키텍처 절에서 `home.html`을 테마 상속이 아니라 로컬 오버라이드로 바로잡음 | `_includes/reading_time.html`, `_layouts/{post,home}.html`, `test/site_output_test.rb`, `CLAUDE.md` | 태그만 벗긴 모든 글자를 500자당 1분으로 세어 Jev 입문편이 63분으로 표기됐음. 공백과 각주를 빼면 43분. `home.html`은 #39부터 저장소에 있었지만 문서는 테마 상속으로 적고 있었음 (#117) |
