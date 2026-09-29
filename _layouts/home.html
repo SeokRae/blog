@@ -6,6 +6,7 @@ layout: default
 테마 home.html 오버라이드 (#38).
 - 티저 발췌를 post.excerpt(첫 문단)에서 본문 고정 길이 truncate로 바꿔 카드 길이를 통일한다.
   첫 문단이 짧은 볼드 한 줄인 글과 긴 문단인 글의 티저 높이가 들쭉날쭉하던 문제 해소.
+- 읽기 시간은 post.html과 같은 _includes/reading_time.html로 계산한다(#117).
 - 페이지네이션 화살표는 테마 원본이 FontAwesome(<i class="fa">)을 쓰는데 #24에서
   FontAwesome을 제거했으므로 인라인 SVG로 교체(포스트 6개 넘으면 깨지던 잠복 버그).
 {% endcomment %}
@@ -27,10 +28,8 @@ layout: default
             {{ post.title }}
           </a>
         </h1>
-        {% assign reading_chars = post.content | strip_html | size %}
-        {% assign reading_min = reading_chars | divided_by: 500 | plus: 1 %}
         <p class="meta">
-          {{ post.date | date: "%B %-d, %Y" }} · {{ reading_min }}분 읽기
+          {{ post.date | date: "%B %-d, %Y" }} · {% include reading_time.html content=post.content %}분 읽기
         </p>
       </header>
       <div class="excerpt">
