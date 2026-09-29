@@ -6,9 +6,9 @@ subtitle: "처음 보는 개발자를 위한 입문: 무엇이고, 어떻게 동
 tags: [AI, Jev, 아키텍처]
 ---
 
-TypeSafe AI가 2026-09-15에 Jev를 발표하면서 회사 블로그 첫머리에 던진 질문은 모델 성능에 관한 것이 아니었습니다.[^blog]
+TypeSafe AI가 2026-09-15에 Jev를 발표하면서 회사 블로그 첫머리에 던진 질문은 모델 성능에 관한 것이 아니었습니다.
 
-> "Models have been superhuman at chat for years, so where is all the automation?"
+> "Models have been superhuman at chat for years, so where is all the automation?"[^blog]
 
 대화는 오래전부터 잘하는데 자동화는 왜 그만큼 따라오지 않았느냐는 물음입니다. 벤더가 내놓은 답은 더 똑똑한 대화 모델이 아니라 다른 인터페이스였습니다. 같은 글의 결말부는 회사를 세운 이유를 "We started TypeSafe because we believe that AI needs an interface software could depend on."이라고 적습니다. Jev는 그 인터페이스를 위해 만든 첫 모델입니다. 문장을 만들지 않고, 호출하는 쪽 코드가 미리 정해 보낸 칸에 판단과 확률을 채워 돌려줍니다.
 
