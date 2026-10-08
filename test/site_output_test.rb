@@ -26,6 +26,7 @@ class SiteOutputTest < Minitest::Test
         chdir: source
       )
       assert status.success?, "Jekyll build failed:\n#{stdout}\n#{stderr}"
+      assert_no_external_requests(destination, source)
 
       index = File.read(File.join(destination, "index.html"))
       about = File.read(File.join(destination, "about", "index.html"))
@@ -72,13 +73,11 @@ class SiteOutputTest < Minitest::Test
       refute_includes sitemap, "/blog/tags.html"
       refute_includes about, "background-image: url('/blog/')"
       # 아이콘 3개(검색·RSS·GitHub)는 인라인 SVG다. 외부 요청 없이 렌더돼야 한다. (#24)
-      refute_match(%r{<link[^>]*\shref="https?://[^"]*\.css}, index, "외부 스타일시트를 받으면 안 된다")
       refute_includes index, "fontawesome"
       assert_match(%r{<svg class="icon"}, index)
       assert_includes index, 'aria-label="Follow RSS feed"'
       assert_includes index, 'aria-label="Follow on GitHub"'
       assert_includes search, 'aria-label="검색"'
-      refute_match(%r{<script[^>]*\ssrc="https?://}, search, "검색은 외부 스크립트 없이 동작해야 한다")
       refute_match(%r{"url": "/blog//}, search)
       assert File.exist?(File.join(destination, "page2", "index.html")), "Expected /blog/page2/ output"
       refute File.exist?(File.join(destination, "blog", "page2", "index.html")), "Unexpected duplicated /blog/blog/page2/ output"
@@ -105,8 +104,6 @@ class SiteOutputTest < Minitest::Test
       assert_match(%r{<svg[^>]*viewBox="-4 -24 648 386"}, flowcast_post, "flowcast component SVG가 인라인으로 남아야 한다")
       # 세 관점의 인터랙티브 버전으로 가는 라이브 갤러리 링크가 있어야 한다. (#44)
       assert_includes flowcast_post, "https://seokrae.github.io/flowcast/", "flowcast 갤러리 링크가 있어야 한다"
-      refute_match(%r{<link[^>]*rel="stylesheet"[^>]*href="https?://}, flowcast_post, "예시 다이어그램이 외부 스타일시트를 끌어오면 안 된다")
-      refute_match(%r{<script[^>]*\ssrc="https?://}, flowcast_post, "예시 다이어그램이 외부 스크립트를 끌어오면 안 된다")
       # 다이어그램은 색을 CSS 변수로만 갖는다. 다크 모드에서 사이트 테마를 따르도록
       # [data-theme="dark"] .flowcast-embed가 팔레트 변수를 다크로 오버라이드해야 한다. (#40)
       assert_match(/\[data-theme=("?)dark\1\]\s*\.flowcast-embed\s*\{/, flowcast_post,
@@ -121,10 +118,6 @@ class SiteOutputTest < Minitest::Test
         "다크 모드에서 알고리즘 애니메이션 팔레트를 오버라이드하는 규칙이 있어야 한다")
       assert_match(/@media \(prefers-reduced-motion: ?reduce\)/, rate_limiter_post,
         "모션 최소화 설정을 존중하는 규칙이 있어야 한다")
-      refute_match(%r{<link[^>]*rel="stylesheet"[^>]*href="https?://}, rate_limiter_post,
-        "알고리즘 애니메이션이 외부 스타일시트를 끌어오면 안 된다")
-      refute_match(%r{<script[^>]*\ssrc="https?://}, rate_limiter_post,
-        "알고리즘 애니메이션이 외부 스크립트를 끌어오면 안 된다")
       # Jev 편 도입부의 호출 개요 그림. 인라인 HTML과 CSS만 쓰고 다크 모드를 따른다.
       # 요청과 응답 값은 벤더 API 문서 예시의 원문이라 그대로 남아야 한다. (#111)
       assert_includes jev_post, 'class="jev-embed"', "Jev 호출 개요 그림이 있어야 한다"
@@ -133,10 +126,6 @@ class SiteOutputTest < Minitest::Test
       assert_includes jev_post, '"Help! My payouts have been failing for 3 days."',
         "그림의 state 예시는 API 문서 원문 그대로여야 한다"
       assert_includes jev_post, '"jev-1.13.0"', "그림의 응답 예시에 실제로 답한 버전이 있어야 한다"
-      refute_match(%r{<link[^>]*rel="stylesheet"[^>]*href="https?://}, jev_post,
-        "Jev 개요 그림이 외부 스타일시트를 끌어오면 안 된다")
-      refute_match(%r{<script[^>]*\ssrc="https?://}, jev_post,
-        "Jev 개요 그림이 외부 스크립트를 끌어오면 안 된다")
       # 핵심 프로세스 그림 두 장. 벤더 문서의 분기(사실)는 높은 확신도에서 사람 확인이 갈리는
       # 대비를, 필자가 제안한 분기(해석)는 해석 표시를 잃으면 안 된다. (#113)
       assert_equal 3, jev_post.scan(/<figure class="jev-embed/).length,
@@ -157,10 +146,6 @@ class SiteOutputTest < Minitest::Test
       assert_includes jev_intro_post,
         %q{<span class="jvi-quote">"Hi, I've been trying to connect my Stripe account for 3 days and the integration keeps failing. I'm losing sales. Please help ASAP."</span>},
         "그림의 state 예시는 quickstart 문서 원문 그대로여야 한다"
-      refute_match(%r{<link[^>]*rel="stylesheet"[^>]*href="https?://}, jev_intro_post,
-        "Jev 입문편 그림이 외부 스타일시트를 끌어오면 안 된다")
-      refute_match(%r{<script[^>]*\ssrc="https?://}, jev_intro_post,
-        "Jev 입문편 그림이 외부 스크립트를 끌어오면 안 된다")
       # 심화편 첫머리는 입문편을 먼저 읽도록 안내한다. 하단 post-nav도 같은 경로를 가리키므로
       # 경로만이 아니라 본문 안내 링크의 제목까지 확인한다. (#115)
       assert_includes jev_post,
@@ -198,6 +183,30 @@ class SiteOutputTest < Minitest::Test
   end
 
   private
+
+  # 외부 요청 0 계약을 페이지 이름으로 골라 걸면, 임베드 글이 생길 때마다 단언을 손으로 더해야
+  # 하고 잊어도 아무것도 실패하지 않는다. 그래서 생성된 HTML 전체를 훑는다. (#125)
+  # 새 글에 외부 요청 단언을 따로 추가할 필요는 없다.
+  def assert_no_external_requests(destination, source)
+    pages = Dir.glob(File.join(destination, "**", "*.html"))
+    posts = Dir.glob(File.join(source, "_posts", "*.md"))
+    # glob이 비면 아래 단언은 아무것도 검사하지 않고 통과한다.
+    assert_operator pages.size, :>=, posts.size, "훑은 HTML이 원본 포스트 수보다 적다"
+
+    external = %r{\A["']?(?:https?:)?//}i
+    # canonical처럼 주소만 적는 link는 요청이 아니다. 리소스를 받아 오는 rel이거나 .css일 때만 본다.
+    fetching = /\brel=["']?[^"'>]*\b(?:stylesheet|preload|modulepreload|prefetch|icon)\b/i
+    violations = pages.flat_map do |page|
+      html = File.read(page)
+      links = html.scan(/<link\b[^>]*>/i).select do |tag|
+        href = tag[/\bhref=(\S+)/i, 1]
+        href&.match?(external) && (tag.match?(fetching) || href.match?(/\.css\b/i))
+      end
+      scripts = html.scan(/<script\b[^>]*>/i).select { |tag| tag[/\bsrc=(\S+)/i, 1]&.match?(external) }
+      (links + scripts).map { |tag| "#{page.delete_prefix("#{destination}/")}: #{tag}" }
+    end
+    assert_empty violations, "외부 스타일시트나 스크립트를 받는 페이지가 있다"
+  end
 
   # 테마 기본 색은 흰 배경에서 WCAG AA(4.5:1)에 미달했다. (#26)
   # 교체 방식이 둘로 갈리므로 검증 방식도 다르다.
