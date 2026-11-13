@@ -1,7 +1,7 @@
 # 리서치: "하네스 엔지니어링 with 클로드 코드" 전체 구조 개관
 
 - slug: `harness-engineering-book-overview`
-- 내부 근거 위치: `/Users/sr/IdeaProjects/learning/books/harness-engineering-with-claude-code/output/chapters/`
+- 내부 근거 위치: 작성자의 비공개 독서 노트
 - 원서: 황민호, 한빛미디어, 2026-06-11 초판 1쇄 (ISBN 979-11-7579-059-9)
 - 전제: 이 저장소는 원서를 챕터 단위로 전사한 것이다. 아래 내부 근거는 **책의 주장**이지 저장소 작성자의 실험 결과가 아니다. writer는 "책이 ~라고 말한다"와 "내가 ~를 겪었다"를 섞지 말 것.
 
@@ -425,9 +425,9 @@
 ## 검증 기록
 
 - 검증일: 2026-07-29
-- 검증 대상: `/Users/sr/IdeaProjects/blog/_drafts/harness-engineering-book-overview.md`
+- 검증 대상: `_drafts/harness-engineering-book-overview.md`
 - 초안에 `(확인 필요)` 플래그는 없었다. 작성자가 초안 하단 `<!-- 작성자 노트 -->`에 남긴 **인용 출처 대조표(파일:라인)를 전수 대조**하는 방식으로 검증했다.
-- 1차 근거: 전사 저장소 `/Users/sr/IdeaProjects/learning/books/harness-engineering-with-claude-code/output/chapters/` (원서 황민호, 『하네스 엔지니어링 with 클로드 코드』, 한빛미디어, 초판 1쇄 2026-06-11, ISBN 979-11-7579-059-9 — 판권 확인 `00_front_matter.md:43`, `:46`, `:49`)
+- 1차 근거: 작성자의 비공개 독서 노트 (원서 황민호, 『하네스 엔지니어링 with 클로드 코드』, 한빛미디어, 초판 1쇄 2026-06-11, ISBN 979-11-7579-059-9 — 판권 확인 `00_front_matter.md:43`, `:46`, `:49`)
 - 2차 근거: WebSearch / curl HTTP 상태 확인 (외부 인용 7건)
 - 결과 요약: **오류 교정 7건 / 확정 20건 / 확인 불가 0건**
 
@@ -521,7 +521,7 @@
 - 검증일: 2026-07-29 (같은 날 2차)
 - 검증 대상: 같은 초안. 발행본(`_posts/2026-07-29-harness-engineering-book-overview.md`)을 writer가 노트의 미사용 소재로 보강한 판. **1차에서 확정한 부분은 재검증하지 않고, `diff _posts/… _drafts/…`로 추출한 신규·수정 서술에만 집중**했다. 다만 문맥 변화로 기존 서술의 귀속이 어긋난 곳은 함께 점검했다(48번).
 - 초안의 `(확인 필요)` 플래그: **1건** (OpenAI 3인→7인 / 1인당 처리량 증가). → 확정 처리(41번).
-- 1차 근거: 전사 저장소 `/Users/sr/IdeaProjects/learning/books/harness-engineering-with-claude-code/output/chapters/`
+- 1차 근거: 작성자의 비공개 독서 노트
 - 2차 근거: WebSearch / WebFetch (OpenAI 회고 원문의 축자 인용 확보)
 - 결과 요약: **오류 교정 6건 / 확정 10건(항목 묶음) / 확인 불가 0건**
 
@@ -616,7 +616,7 @@
 - 검증일: 2026-07-29 (같은 날 3차)
 - 검증 대상: `_drafts/harness-engineering-book-overview.md` — 사용자 피드백("책 내용을 순서대로 설명하는 것처럼 읽힌다 / 장·부 번호 나열 대신 자연스러운 에세이로")에 따라 blog-writer가 **구조만** 재작성한 판. 기준선은 발행본 `_posts/2026-07-29-harness-engineering-book-overview.md`.
 - 검증 전략: 이번 작업의 전제가 "사실은 그대로, 배치만 바꾼다"였으므로 **새 사실이 섞여 들어왔는지**를 1순위로 봤다. 문장 단위 diff·숫자 multiset 대조·인용문 전수 재대조라는 기계적 대조 3종을 먼저 돌린 뒤, 작성자 노트가 스스로 지목한 7개 지점을 원서 전사본으로 개별 재확인했다.
-- 1차 근거: 전사 저장소 `/Users/sr/IdeaProjects/learning/books/harness-engineering-with-claude-code/output/chapters/`
+- 1차 근거: 작성자의 비공개 독서 노트
 - 2차 근거: 각주 URL 6건 HTTP 상태 재확인
 - 초안의 `(확인 필요)` 플래그: **0건** (전수 grep)
 - 결과 요약: **오류 교정 2건 / 확정 8건(항목 묶음) / 확인 불가 0건**
@@ -693,7 +693,7 @@
 - 검증일: 2026-07-29 (같은 날 4차)
 - 검증 대상: `_drafts/harness-engineering-book-overview.md` — Fable 모델의 두 차례 독립 피드백("장 지칭으로 절을 여는 패턴이 목차 순회처럼 읽힌다", "제목의 5부가 본문에서 증명 안 됨", "헛침 있음", "'수레다' 절이 목차 요약", "역산 문장 중복")을 반영해 blog-writer가 절 순서·서두 방식을 재작성한 판. 기준선은 발행본 `_posts/2026-07-29-harness-engineering-book-overview.md`.
 - 검증 전략: 3차와 동일한 기계적 대조 3종(블록인용·숫자 multiset·문장 단위 차집합)을 먼저 돌려 **재배치가 사실을 훼손했는지**를 배제한 뒤, 이번 판이 **새로 만든 서술**(신규 인용 2건, 도입부 목차 서술, 헛침 해소 문단, 인용 이동 1건, 인용부호 제거 3건)을 원서 전사본으로 개별 확인했다.
-- 1차 근거: 전사 저장소 `/Users/sr/IdeaProjects/learning/books/harness-engineering-with-claude-code/output/chapters/`
+- 1차 근거: 작성자의 비공개 독서 노트
 - 외부 근거: 이번 판은 각주·외부 인용을 1건도 추가·변경하지 않았으므로(65번) 1차 25~31번의 외부 검증 범위 안에 있다.
 - 초안의 `(확인 필요)` 플래그: **0건** (전수 grep)
 - 결과 요약: **오류 교정 1건 / 확정 9건(항목 묶음) / 확인 불가 0건**
@@ -786,7 +786,7 @@
 - 검증일: 2026-07-30
 - 검증 대상: `_drafts/harness-engineering-book-overview.md` (4차 절 순서·서두 재작성본 = 4차 라운드와 동일한 초안). 기준선은 발행본 `_posts/2026-07-29-harness-engineering-book-overview.md`.
 - **이 라운드의 성격:** 4차 라운드 기록(59~69번)이 이미 존재하는 상태에서 **같은 초안을 독립적으로 다시 검증**했다. 4차 기록을 근거로 재사용하지 않고 원서 전사본에서 다시 확인했다. 이 방침을 택한 이유는 이 노트 자체가 앞서 두 번 "이전 라운드의 판정이 오판이었다"를 기록했기 때문이다(3차 50번이 1차 14번을 뒤집고, 검증 기록 7번이 근거 D·인사이트 7을 뒤집음). 실제로 이번에도 **4차 판정 1건이 뒤집혔다**(70번).
-- 1차 근거: 전사 저장소 `/Users/sr/IdeaProjects/learning/books/harness-engineering-with-claude-code/output/chapters/`
+- 1차 근거: 작성자의 비공개 독서 노트
 - 외부 근거: 이번 판은 각주·외부 인용을 1건도 추가·변경하지 않았다(각주 정의 7개가 발행본과 문자 단위 동일, 76번). 따라서 1차 25~31번·근거 F의 외부 검증이 그대로 유효하며 이번 라운드에서 외부 재조회는 하지 않았다.
 - 초안의 `(확인 필요)` 플래그: **0건** (전수 grep)
 - 결과 요약: **오류 교정 3건 / 확정 7건(항목 묶음) / 확인 불가 0건**
