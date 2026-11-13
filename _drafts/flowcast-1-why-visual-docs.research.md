@@ -5,9 +5,9 @@
 > 경로 표기: 내부 근거는 `파일:라인` 또는 커밋 해시, 외부는 URL.
 
 관련 소스 위치(전부 접근 성공):
-- flowcast 소스: `/Users/sr/IdeaProjects/claude-tools/flowcast/`
-- 버전별 캐시: `/Users/sr/.claude/plugins/cache/flowcast/flowcast/<버전>/` (0.2.0 ~ 0.11.2, 총 19개 버전 스냅샷)
-- 메모리 노트: `/Users/sr/.claude/projects/-Users-sr-obsidian-sr-labs/memory/project-flowcast-plugin.md`
+- flowcast 소스: flowcast 저장소(공개)
+- 버전별 캐시: `~/.claude/plugins/cache/flowcast/flowcast/<버전>/` (0.2.0 ~ 0.11.2, 총 19개 버전 스냅샷)
+- 메모리 노트: 작성자의 비공개 메모 노트(flowcast 플러그인 항목)
 
 ---
 
@@ -43,8 +43,8 @@
 ### E. 이 사람은 '문서 시각화'에 반복 투자해왔다 (정황 근거 — 가볍게)
 
 - (내부) flowcast 외에도 시각화 도구가 여러 개 존재한다:
-  - `sr-obsidian:visualize` — "프로젝트 문서(MD)를 HTML 시각화로 변환" (`/Users/sr/.claude/plugins/marketplaces/sr-obsidian/skills/visualize/SKILL.md`)
-  - `claude-visualize` 플러그인 — "Generate self-contained HTML visualizations from documents, data, flows, system architectures..." (`/Users/sr/.claude/plugins/marketplaces/claude-visualize/skills/visualize/SKILL.md`)
+  - `sr-obsidian:visualize` — "프로젝트 문서(MD)를 HTML 시각화로 변환" (`~/.claude/plugins/marketplaces/sr-obsidian/skills/visualize/SKILL.md`)
+  - `claude-visualize` 플러그인 — "Generate self-contained HTML visualizations from documents, data, flows, system architectures..." (`~/.claude/plugins/marketplaces/claude-visualize/skills/visualize/SKILL.md`)
   - `dataviz` 스킬 (차트/대시보드 디자인 시스템) — 세션 available-skills에 존재
   - `sr-obsidian:canvas`(의존관계 맵·다이어그램), `sr-obsidian:obsidian-bases`(데이터 집계 뷰) 등
   - 그리고 flowcast의 전신 `ifflow`(vault 로컬)
