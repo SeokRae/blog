@@ -5,9 +5,9 @@
 > 경로 표기: 내부 근거는 `파일:라인` 또는 커밋 해시, 외부는 URL.
 
 관련 소스 위치(전부 접근 성공):
-- flowcast 소스: `flowcast/`
+- flowcast 소스: flowcast 저장소(공개)
 - 버전별 캐시: `~/.claude/plugins/cache/flowcast/flowcast/<버전>/` (0.2.0 ~ 0.11.2, 총 19개 버전 스냅샷)
-- 메모리 노트: `작성자의 비공개 메모 노트`
+- 메모리 노트: 작성자의 비공개 메모 노트(flowcast 플러그인 항목)
 
 ---
 
